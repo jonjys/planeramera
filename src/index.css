@@ -109,6 +109,7 @@ input::placeholder {
 
 .tabbar button {
   flex: 1;
+  min-width: 52px;
   max-width: 88px;
   display: flex;
   flex-direction: column;
@@ -648,6 +649,70 @@ input::placeholder {
   text-transform: uppercase;
   color: var(--muted);
   margin: 22px 0 10px;
+}
+
+/* ---------- health ---------- */
+
+.spark {
+  display: flex;
+  gap: 5px;
+  align-items: flex-end;
+  height: 52px;
+  margin-top: 8px;
+}
+
+.spark-col {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.spark .bar {
+  width: 100%;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 5px 5px 0 0;
+}
+
+.spark .bar.goal-met {
+  background: linear-gradient(180deg, var(--gold), var(--gold-dim));
+  border-color: var(--gold-dim);
+}
+
+.spark-labels {
+  display: flex;
+  gap: 5px;
+  margin-top: 4px;
+}
+
+.spark-labels span {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.mood-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.mood {
+  flex: 1;
+  font-size: 24px;
+  padding: 8px 0;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--card2);
+  opacity: 0.55;
+}
+
+.mood.on {
+  border-color: var(--gold);
+  opacity: 1;
+  background: rgba(242, 193, 78, 0.1);
 }
 
 /* ---------- misc ---------- */

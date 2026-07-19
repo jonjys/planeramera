@@ -1,7 +1,55 @@
-import { useState } from 'react'
-import { useStored, dateKey, monthKey, uid, kr } from '../store'
+import { useRef, useState } from 'react'
+import { useStored, dateKey, monthKey, uid, kr, pad } from '../store'
 import { expenseCategories } from '../data'
 import type { Expense, Goal } from '../types'
+
+interface Subscription {
+  id: string
+  name: string
+  price: number
+}
+
+/** Tolerant CSV-tolkning av bank-/Klarnaexporter: hittar datum-, belopp-
+ *  och textkolumn per rad oavsett kolumnordning. */
+export function parseBankCsv(text: string): Omit<Expense, 'id'>[] {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim())
+  if (!lines.length) return []
+  const first = lines[0]
+  const delim = [';', '\t', ','].reduce((a, b) =>
+    first.split(a).length >= first.split(b).length ? a : b,
+  )
+  const rows: Omit<Expense, 'id'>[] = []
+  for (const line of lines) {
+    const cells = line
+      .split(delim)
+      .map((c) => c.replace(/^["']|["']$/g, '').trim())
+    let date = ''
+    let amount: number | null = null
+    let note = ''
+    for (const cell of cells) {
+      let m = cell.match(/^(\d{4})-(\d{2})-(\d{2})/)
+      if (m) {
+        date = `${m[1]}-${m[2]}-${m[3]}`
+        continue
+      }
+      m = cell.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})/)
+      if (m) {
+        date = `${m[3]}-${pad(Number(m[2]))}-${pad(Number(m[1]))}`
+        continue
+      }
+      const num = cell.replace(/\s/g, '').replace(',', '.')
+      if (/^-?\d+(\.\d+)?$/.test(num) && num.includes('.')) {
+        amount = Number(num)
+        continue
+      }
+      if (cell.length > note.length && !/^\d+$/.test(cell)) note = cell
+    }
+    if (date && amount !== null && amount < 0) {
+      rows.push({ date, amount: Math.abs(amount), category: 'Övrigt', note })
+    }
+  }
+  return rows
+}
 
 export default function Economy() {
   const [expenses, setExpenses] = useStored<Expense[]>('pm.expenses', [])
@@ -15,6 +63,35 @@ export default function Economy() {
   const [goalName, setGoalName] = useState('')
   const [goalTarget, setGoalTarget] = useState('')
   const [deposits, setDeposits] = useState<Record<string, string>>({})
+
+  const [subs, setSubs] = useStored<Subscription[]>('pm.subs', [])
+  const [subName, setSubName] = useState('')
+  const [subPrice, setSubPrice] = useState('')
+  const csvRef = useRef<HTMLInputElement>(null)
+  const [csvStatus, setCsvStatus] = useState('')
+
+  const importCsv = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const rows = parseBankCsv(String(reader.result))
+      if (!rows.length) {
+        setCsvStatus('Hittade inga utgifter i filen — kolla att det är en CSV-export.')
+        return
+      }
+      setExpenses([...rows.map((r) => ({ ...r, id: uid() })), ...expenses])
+      setCsvStatus(`✓ Importerade ${rows.length} utgifter.`)
+    }
+    reader.readAsText(file)
+  }
+
+  const addSub = () => {
+    const price = Number(subPrice.replace(',', '.'))
+    if (!subName.trim() || !price || price <= 0) return
+    setSubs([...subs, { id: uid(), name: subName.trim(), price }])
+    setSubName('')
+    setSubPrice('')
+  }
+  const subTotal = subs.reduce((s, x) => s + x.price, 0)
 
   const addExpense = () => {
     const value = Number(amount.replace(',', '.'))
@@ -113,6 +190,78 @@ export default function Economy() {
           />
           <button className="btn" onClick={addExpense}>
             Logga
+          </button>
+        </div>
+        <div className="add-row">
+          <button className="btn-ghost" style={{ flex: 1 }} onClick={() => csvRef.current?.click()}>
+            📄 Importera CSV från bank/Klarna
+          </button>
+          <input
+            ref={csvRef}
+            type="file"
+            accept=".csv,text/csv,text/plain"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (f) importCsv(f)
+              e.target.value = ''
+            }}
+          />
+        </div>
+        {csvStatus && (
+          <div className="hint" style={{ marginTop: 8 }}>
+            {csvStatus}
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="card-title">Prenumerationer</div>
+        <div className="card-sub">
+          Tysta pengaläckor nummer ett. Skriv upp allt du betalar för varje månad —
+          och se vad det kostar per år.
+        </div>
+        {subs.map((s) => (
+          <div className="expense-row" key={s.id}>
+            <span className="note">{s.name}</span>
+            <span className="amount">{kr(s.price)}/mån</span>
+            <button
+              className="row-del"
+              onClick={() => setSubs(subs.filter((x) => x.id !== s.id))}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        {subs.length > 0 && (
+          <>
+            <div className="result-line">
+              <span>Per månad</span>
+              <span className="value">{kr(subTotal)}</span>
+            </div>
+            <div className="result-line">
+              <span>Per år</span>
+              <span className="value">{kr(subTotal * 12)}</span>
+            </div>
+          </>
+        )}
+        <div className="two-col" style={{ marginTop: 10 }}>
+          <input
+            value={subName}
+            placeholder="T.ex. Netflix…"
+            onChange={(e) => setSubName(e.target.value)}
+          />
+          <input
+            value={subPrice}
+            inputMode="decimal"
+            placeholder="Kr/mån"
+            onChange={(e) => setSubPrice(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addSub()}
+          />
+        </div>
+        <div className="add-row">
+          <button className="btn" style={{ flex: 1 }} onClick={addSub}>
+            Lägg till prenumeration
           </button>
         </div>
       </div>

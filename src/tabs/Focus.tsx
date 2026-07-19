@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { pad, uid, useStored } from '../store'
+import { dateKey, pad, uid, useStored } from '../store'
 import { focusMethods } from '../data'
 
 const WORK = 25 * 60
@@ -36,6 +36,7 @@ export default function Focus() {
   )
   const [notToDo, setNotToDo] = useStored<NotToDo[]>('pm.nottodo', [])
   const [draft, setDraft] = useState('')
+  const [distract, setDistract] = useStored<Record<string, number>>('pm.distract', {})
   // klockbaserad deadline i stället för att räkna intervall — driftar inte
   // när fliken ligger i bakgrunden
   const endAt = useRef(0)
@@ -50,6 +51,16 @@ export default function Focus() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running])
 
+  const notify = (title: string, body: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification(title, { body })
+      } catch {
+        // vissa mobilwebbläsare stödjer inte konstruktorn — ignorera
+      }
+    }
+  }
+
   useEffect(() => {
     if (!running || left > 0) return
     if (phase === 'work') {
@@ -59,13 +70,29 @@ export default function Focus() {
         nextRounds % ROUNDS_BEFORE_LONG === 0 ? 'longbreak' : 'break'
       setPhase(next)
       setLeft(phaseLength[next])
+      notify(
+        'Fokuspasset klart! 🍅',
+        next === 'longbreak' ? 'Ta en lång paus — du har förtjänat den.' : 'Ta 5 minuters paus.',
+      )
     } else {
       setPhase('work')
       setLeft(WORK)
+      notify('Pausen är slut', 'Dags att fokusera igen. 5-4-3-2-1 🚀')
     }
     setRunning(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [left, running])
+
+  const start = () => {
+    if (
+      !running &&
+      'Notification' in window &&
+      Notification.permission === 'default'
+    ) {
+      Notification.requestPermission().catch(() => {})
+    }
+    setRunning(!running)
+  }
 
   const timeStr = `${pad(Math.floor(left / 60))}:${pad(left % 60)}`
 
@@ -108,7 +135,7 @@ export default function Focus() {
         <div className="pomo-time">{timeStr}</div>
         <div className="pomo-rounds">🍅 {rounds} rundor idag</div>
         <div className="pomo-controls">
-          <button className="btn" onClick={() => setRunning(!running)}>
+          <button className="btn" onClick={start}>
             {running ? 'Pausa' : 'Starta'}
           </button>
           <button className="btn-ghost" onClick={reset}>
@@ -137,6 +164,40 @@ export default function Focus() {
         </div>
         <div className="check-row">
           <span className="check-label">4. Starta timern och räkna 5-4-3-2-1 🚀</span>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-title">Distraktionsräknare</div>
+        <div className="card-sub">
+          Instagram pockar? I stället för att öppna appen — tryck här och fortsätt
+          jobba. Att se siffran räcker ofta för att bryta vanan.
+        </div>
+        <div className="pomo-controls" style={{ justifyContent: 'flex-start' }}>
+          <button
+            className="btn"
+            onClick={() => {
+              const today = dateKey()
+              setDistract({ ...distract, [today]: (distract[today] ?? 0) + 1 })
+            }}
+          >
+            😵 Jag blev distraherad
+          </button>
+        </div>
+        <div className="result-line" style={{ marginTop: 10 }}>
+          <span>Idag</span>
+          <span className="value">{distract[dateKey()] ?? 0} gånger</span>
+        </div>
+        <div className="result-line">
+          <span>Senaste 7 dagarna</span>
+          <span className="value">
+            {Array.from({ length: 7 }, (_, i) => {
+              const d = new Date()
+              d.setDate(d.getDate() - i)
+              return distract[dateKey(d)] ?? 0
+            }).reduce((a, b) => a + b, 0)}{' '}
+            gånger
+          </span>
         </div>
       </div>
 

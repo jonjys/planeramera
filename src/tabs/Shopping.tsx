@@ -6,6 +6,23 @@ import type { ShopItem } from '../types'
 export default function Shopping() {
   const [items, setItems] = useStored<ShopItem[]>('pm.shopping', [])
   const [draft, setDraft] = useState('')
+  const [shareMsg, setShareMsg] = useState('')
+
+  const shareList = async () => {
+    const open = items.filter((i) => !i.checked)
+    const text = 'Inköpslista:\n' + open.map((i) => '• ' + i.text).join('\n')
+    try {
+      if (navigator.share) {
+        await navigator.share({ text })
+      } else {
+        await navigator.clipboard.writeText(text)
+        setShareMsg('✓ Kopierad — klistra in var du vill!')
+        setTimeout(() => setShareMsg(''), 2500)
+      }
+    } catch {
+      // användaren avbröt delningen
+    }
+  }
 
   const add = (text: string) => {
     const t = text.trim()
@@ -74,13 +91,19 @@ export default function Shopping() {
           </button>
         </div>
 
-        {checkedCount > 0 && (
-          <div className="add-row">
+        <div className="add-row">
+          {items.some((i) => !i.checked) && (
+            <button className="btn-ghost" style={{ flex: 1 }} onClick={shareList}>
+              📤 Dela listan
+            </button>
+          )}
+          {checkedCount > 0 && (
             <button className="btn-ghost" style={{ flex: 1 }} onClick={clearChecked}>
               Rensa avbockade ({checkedCount})
             </button>
-          </div>
-        )}
+          )}
+        </div>
+        {shareMsg && <div className="hint">{shareMsg}</div>}
       </div>
 
       <div className="card">
