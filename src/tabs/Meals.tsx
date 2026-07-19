@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useStored, uid } from '../store'
+import { useStored, uid, weekDates } from '../store'
 import { meals, cookingEasier } from '../data'
+import { downloadIcs } from '../ics'
 import type { ShopItem } from '../types'
 
 const weekdayNames = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
@@ -74,17 +75,47 @@ export default function Meals() {
           </div>
         ))}
         {plannedMeals.length > 0 && (
-          <div className="add-row">
-            <button
-              className={weekAdded ? 'btn-ghost' : 'btn'}
-              style={{ flex: 1 }}
-              onClick={addWeekIngredients}
-            >
-              {weekAdded
-                ? '✓ Tillagt på inköpslistan'
-                : '🛒 Lägg veckans ingredienser på listan'}
-            </button>
-          </div>
+          <>
+            <div className="add-row">
+              <button
+                className={weekAdded ? 'btn-ghost' : 'btn'}
+                style={{ flex: 1 }}
+                onClick={addWeekIngredients}
+              >
+                {weekAdded
+                  ? '✓ Tillagt på inköpslistan'
+                  : '🛒 Lägg veckans ingredienser på listan'}
+              </button>
+            </div>
+            <div className="add-row">
+              <button
+                className="btn-ghost"
+                style={{ flex: 1 }}
+                onClick={() => {
+                  const monday = weekDates()[0]
+                  const events = Object.entries(plan).flatMap(([i, mealId]) => {
+                    const meal = meals.find((m) => m.id === mealId)
+                    if (!meal) return []
+                    const start = new Date(monday)
+                    start.setDate(start.getDate() + Number(i))
+                    start.setHours(17, 30, 0, 0)
+                    return [
+                      {
+                        title: `🍽️ ${meal.name}`,
+                        start,
+                        durationMin: 60,
+                        rrule: 'FREQ=WEEKLY',
+                        description: 'Planera Mera — veckans matsedel',
+                      },
+                    ]
+                  })
+                  downloadIcs('planeramera-matsedel.ics', events)
+                }}
+              >
+                📅 Lägg matsedeln i kalendern
+              </button>
+            </div>
+          </>
         )}
       </div>
 

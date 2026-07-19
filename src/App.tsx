@@ -42,6 +42,27 @@ function readPackFromUrl(): Pack | null {
   return decodePack(location.hash.slice('#pack='.length))
 }
 
+const healthKeys = ['steps', 'sleep', 'water', 'weight'] as const
+
+function readHealthFromUrl(): Record<string, number> | null {
+  if (!location.hash.startsWith('#health=')) return null
+  const out: Record<string, number> = {}
+  for (const pair of location.hash.slice('#health='.length).split(',')) {
+    const [key, value] = pair.split(':')
+    const num = Number((value ?? '').replace(',', '.'))
+    if ((healthKeys as readonly string[]).includes(key) && isFinite(num) && num > 0) {
+      out[key] = num
+    }
+  }
+  return Object.keys(out).length ? out : null
+}
+
+function readSharedText(): string | null {
+  const params = new URLSearchParams(location.search)
+  const text = params.get('text') || params.get('title')
+  return text?.trim() || null
+}
+
 export default function App() {
   const [tab, setTab] = useStored<TabId>('pm.tab', 'today')
   const [incoming, setIncoming] = useState<Pack | null>(readPackFromUrl)
@@ -57,12 +78,74 @@ export default function App() {
   }
 
   const [toast, setToast] = useState('')
+  const [shared, setShared] = useState<string | null>(readSharedText)
 
   useEffect(() => {
     const update = () => setXp(xpTotal())
     window.addEventListener('pm-xp', update)
     return () => window.removeEventListener('pm-xp', update)
   }, [])
+
+  // autoimport av hälsodata från iOS-genväg: /#health=steps:8543,sleep:7.5
+  useEffect(() => {
+    const data = readHealthFromUrl()
+    if (!data) return
+    try {
+      const key = 'pm.health'
+      const all = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<
+        string,
+        Record<string, number>
+      >
+      const today = new Date()
+      const dk = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+      all[dk] = { ...all[dk], ...data }
+      localStorage.setItem(key, JSON.stringify(all))
+      const labels: Record<string, (v: number) => string> = {
+        steps: (v) => `${v.toLocaleString('sv-SE')} steg`,
+        sleep: (v) => `${String(v).replace('.', ',')} h sömn`,
+        water: (v) => `${v} glas vatten`,
+        weight: (v) => `${String(v).replace('.', ',')} kg`,
+      }
+      const summary = Object.entries(data)
+        .map(([k, v]) => labels[k](v))
+        .join(' · ')
+      setToast(`❤️ Hälsodata importerad: ${summary}`)
+      setTimeout(() => setToast(''), 4500)
+    } catch {
+      // trasig lagring — hoppa över importen
+    }
+    history.replaceState(null, '', location.pathname + location.search)
+  }, [])
+
+  const acceptShared = () => {
+    if (!shared) return
+    try {
+      const list = JSON.parse(localStorage.getItem('pm.shopping') ?? '[]') as {
+        id: string
+        text: string
+        checked: boolean
+      }[]
+      if (!list.some((i) => i.text.toLowerCase() === shared.toLowerCase())) {
+        list.push({
+          id: Math.random().toString(36).slice(2, 10),
+          text: shared,
+          checked: false,
+        })
+        localStorage.setItem('pm.shopping', JSON.stringify(list))
+      }
+      setToast('🛒 Tillagd på inköpslistan!')
+      setTimeout(() => setToast(''), 3000)
+    } catch {
+      // trasig lagring — hoppa över
+    }
+    history.replaceState(null, '', location.pathname)
+    setShared(null)
+  }
+
+  const dismissShared = () => {
+    history.replaceState(null, '', location.pathname)
+    setShared(null)
+  }
 
   const { level } = levelInfo(xp)
 
@@ -117,6 +200,23 @@ export default function App() {
           <div className="app-date">{todayStr}</div>
         </div>
       </header>
+
+      {shared && (
+        <div className="card" style={{ borderColor: 'var(--gold-dim)' }}>
+          <div className="card-title">📥 Delat till Planera Mera</div>
+          <div className="card-sub">
+            "<strong>{shared}</strong>" — lägga till på inköpslistan?
+          </div>
+          <div className="add-row">
+            <button className="btn" style={{ flex: 1 }} onClick={acceptShared}>
+              🛒 Lägg till
+            </button>
+            <button className="btn-ghost" onClick={dismissShared}>
+              Avvisa
+            </button>
+          </div>
+        </div>
+      )}
 
       {incoming && (
         <div className="card" style={{ borderColor: 'var(--gold-dim)' }}>

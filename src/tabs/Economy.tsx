@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useStored, dateKey, monthKey, uid, kr, pad } from '../store'
 import { expenseCategories } from '../data'
+import { downloadIcs } from '../ics'
 import type { Expense, Goal } from '../types'
 
 interface Subscription {
@@ -376,6 +377,30 @@ export default function Economy() {
             <div className="hint" style={{ marginTop: 8 }}>
               Samma datum varje månad, fast belopp. Konsekvens slår engångsinsatser.
               📈
+            </div>
+            <div className="add-row">
+              <button
+                className="btn-ghost"
+                style={{ flex: 1 }}
+                onClick={() => {
+                  const start = new Date()
+                  start.setDate(25)
+                  start.setHours(9, 0, 0, 0)
+                  if (start < new Date()) start.setMonth(start.getMonth() + 1)
+                  downloadIcs('planeramera-spara.ics', [
+                    {
+                      title: `💰 Betala dig själv först — ${kr(incomeNum * 0.1)}`,
+                      start,
+                      durationMin: 15,
+                      rrule: 'FREQ=MONTHLY;BYMONTHDAY=25',
+                      description:
+                        'Planera Mera — överför till sparande innan räkningarna.',
+                    },
+                  ])
+                }}
+              >
+                📅 Månadspåminnelse till kalendern
+              </button>
             </div>
           </div>
         )}

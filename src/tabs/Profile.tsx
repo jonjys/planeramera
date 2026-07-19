@@ -3,6 +3,7 @@ import { xpTotal, xpLog, xpDays, levelInfo } from '../xp'
 import { defaultHabits } from '../data'
 import Backup from '../components/Backup'
 import { Bars, LineChart } from '../components/Charts'
+import { shareWeekImage } from '../storyImage'
 import type { Follow } from '../pack'
 import type { Expense, Habit, PlanTask } from '../types'
 
@@ -204,6 +205,23 @@ export default function Profile() {
         <div className="hint" style={{ marginTop: 8 }}>
           Du får XP för klara uppgifter, vanor, rutiner, fokuspass och
           kvällsreflektioner. Synliga framsteg bygger konsekvens. 📊
+        </div>
+        <div className="add-row">
+          <button
+            className="btn-ghost"
+            style={{ flex: 1 }}
+            onClick={() =>
+              shareWeekImage({
+                name,
+                level,
+                weekXp: week.reduce((s, d) => s + (days[d] ?? 0), 0),
+                tasksDone,
+                bestStreak,
+              })
+            }
+          >
+            📸 Dela min vecka som bild
+          </button>
         </div>
       </div>
 
