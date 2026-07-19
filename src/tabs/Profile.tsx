@@ -1,7 +1,8 @@
-import { useStored, dateKey, addDays, weekDates, kr } from '../store'
+import { useStored, dateKey, addDays, weekDates, weekKey, kr } from '../store'
 import { xpTotal, xpLog, xpDays, levelInfo } from '../xp'
 import { defaultHabits } from '../data'
 import Backup from '../components/Backup'
+import { Bars, LineChart } from '../components/Charts'
 import type { Follow } from '../pack'
 import type { Expense, Habit, PlanTask } from '../types'
 
@@ -156,6 +157,31 @@ export default function Profile() {
   const intensity = (v: number) => (v >= 60 ? 3 : v >= 30 ? 2 : v > 0 ? 1 : 0)
   const today = dateKey()
 
+  // --- grafer ---
+  const dayLetters = ['S', 'M', 'T', 'O', 'T', 'F', 'L']
+  const last14 = Array.from({ length: 14 }, (_, i) => addDays(new Date(), i - 13))
+  const xpSeries = last14.map((d) => ({
+    label: dayLetters[d.getDay()],
+    value: days[dateKey(d)] ?? 0,
+  }))
+
+  const [health] = useStored<Record<string, { mood?: number }>>('pm.health', {})
+  const moodSeries = last14.map((d) => ({
+    label: dayLetters[d.getDay()],
+    value: health[dateKey(d)]?.mood ?? 0,
+  }))
+
+  const weekSpendSeries = Array.from({ length: 8 }, (_, i) => {
+    const monday = addDays(weekDates()[0], (i - 7) * 7)
+    const daysOfWeek = weekDates(monday).map((d) => dateKey(d))
+    return {
+      label: weekKey(monday).split('-')[1],
+      value: expenses
+        .filter((e) => daysOfWeek.includes(e.date))
+        .reduce((s, e) => s + e.amount, 0),
+    }
+  })
+
   return (
     <>
       <div className="card">
@@ -237,6 +263,23 @@ export default function Profile() {
           förändring.
         </div>
       </div>
+
+      <div className="card">
+        <div className="card-title">XP · senaste 14 dagarna</div>
+        <Bars data={xpSeries} />
+      </div>
+
+      <div className="card">
+        <div className="card-title">Utgifter per vecka · 8 veckor</div>
+        <Bars data={weekSpendSeries} color="var(--blue)" />
+      </div>
+
+      {moodSeries.some((m) => m.value > 0) && (
+        <div className="card">
+          <div className="card-title">Humör · senaste 14 dagarna</div>
+          <LineChart data={moodSeries} min={0} max={5} color="var(--green)" />
+        </div>
+      )}
 
       <div className="card">
         <div className="card-title">
