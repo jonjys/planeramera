@@ -7,6 +7,11 @@ import type { TabId } from '../App'
 import { awardXp, XP } from '../xp'
 import { confetti } from '../confetti'
 import { meals, dailyQuotes } from '../data'
+import { getInsights } from '../insights'
+import { xpDays } from '../xp'
+import Rings from '../components/Rings'
+import { weekDates, kr } from '../store'
+import type { Expense } from '../types'
 
 interface JournalEntry {
   stars: number
@@ -134,6 +139,51 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
   const weekdayIndex = (new Date().getDay() + 6) % 7
   const todaysMeal = meals.find((m) => m.id === mealPlan[weekdayIndex])
 
+  const insights = getInsights()
+
+  const habitsDoneToday = habits.filter((h) => habitDoneToday(h)).length
+  const rings = [
+    {
+      pct: tasks.length ? (doneCount / tasks.length) * 100 : 0,
+      color: 'var(--gold)',
+      label: 'Plan',
+      icon: '☀️',
+    },
+    {
+      pct: habits.length ? (habitsDoneToday / habits.length) * 100 : 0,
+      color: 'var(--green)',
+      label: 'Vanor',
+      icon: '📊',
+    },
+    {
+      pct: daily.total ? (daily.done / daily.total) * 100 : 0,
+      color: 'var(--blue)',
+      label: 'Rutiner',
+      icon: '🏠',
+    },
+  ]
+
+  // automatisk veckorapport för förra veckan
+  const [reportDismissed, setReportDismissed] = useStored('pm.weekreport.dismissed', '')
+  const [expenses] = useStored<Expense[]>('pm.expenses', [])
+  const thisWeek = weekKey()
+  const lastWeekDays = weekDates(addDays(new Date(), -7)).map((d) => dateKey(d))
+  const days = xpDays()
+  const lastWeekXp = lastWeekDays.reduce((s, d) => s + (days[d] ?? 0), 0)
+  const lastWeekTasks = lastWeekDays.reduce(
+    (s, d) => s + (plans[d]?.filter((t) => t.done).length ?? 0),
+    0,
+  )
+  const lastWeekSpent = expenses
+    .filter((e) => lastWeekDays.includes(e.date))
+    .reduce((s, e) => s + e.amount, 0)
+  const bestDayIndex = lastWeekDays.reduce(
+    (best, d, i) => ((days[d] ?? 0) > (days[lastWeekDays[best]] ?? 0) ? i : best),
+    0,
+  )
+  const weekdayLong = ['måndag', 'tisdag', 'onsdag', 'torsdag', 'fredag', 'lördag', 'söndag']
+  const showReport = reportDismissed !== thisWeek && lastWeekXp > 0
+
   const dayOfYear = Math.floor(
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000,
   )
@@ -144,6 +194,56 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
       {name && (
         <div className="greeting">
           {greeting}, <span>{name}</span>! 👋
+        </div>
+      )}
+
+      <div className="card rings-card">
+        <div className="card-title">Dagens ringar</div>
+        <div className="card-sub">Stäng alla tre — det är hela spelet.</div>
+        <Rings rings={rings} />
+      </div>
+
+      <div className="card">
+        <div className="card-title">🧭 Coachen</div>
+        {insights.map((ins, i) => (
+          <div className="insight" key={i}>
+            <span className="insight-icon">{ins.icon}</span>
+            <span>{ins.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {showReport && (
+        <div className="card" style={{ borderColor: 'var(--gold-dim)' }}>
+          <div className="card-title">📊 Din veckorapport</div>
+          <div className="card-sub">Förra veckan, automatiskt sammanställd.</div>
+          <div className="result-line">
+            <span>XP intjänade</span>
+            <span className="value">{lastWeekXp}</span>
+          </div>
+          <div className="result-line">
+            <span>Uppgifter avklarade</span>
+            <span className="value">{lastWeekTasks}</span>
+          </div>
+          <div className="result-line">
+            <span>Bästa dagen</span>
+            <span className="value" style={{ textTransform: 'capitalize' }}>
+              {weekdayLong[bestDayIndex]}
+            </span>
+          </div>
+          <div className="result-line">
+            <span>Utgifter</span>
+            <span className="value">{kr(lastWeekSpent)}</span>
+          </div>
+          <div className="add-row">
+            <button
+              className="btn"
+              style={{ flex: 1 }}
+              onClick={() => setReportDismissed(thisWeek)}
+            >
+              Snyggt — ny vecka, nya mål 💪
+            </button>
+          </div>
         </div>
       )}
 
