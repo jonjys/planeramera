@@ -38,6 +38,7 @@ export default function Focus() {
   const [notToDo, setNotToDo] = useStored<NotToDo[]>('pm.nottodo', [])
   const [draft, setDraft] = useState('')
   const [distract, setDistract] = useStored<Record<string, number>>('pm.distract', {})
+  const [zen, setZen] = useState(false)
   // klockbaserad deadline i stället för att räkna intervall — driftar inte
   // när fliken ligger i bakgrunden
   const endAt = useRef(0)
@@ -168,7 +169,28 @@ export default function Focus() {
             Hoppa över
           </button>
         </div>
+        {running && (
+          <div className="add-row" style={{ justifyContent: 'center' }}>
+            <button className="btn-ghost" onClick={() => setZen(true)}>
+              🧘 Fokusläge
+            </button>
+          </div>
+        )}
       </div>
+
+      {zen && running && (
+        <div className="zen" onClick={() => setZen(false)}>
+          <div className="zen-phase">{phaseLabel[phase]}</div>
+          <div className="zen-breath" />
+          <div className="zen-time">{timeStr}</div>
+          <div className="zen-hint">
+            Andas med cirkeln. En uppgift. Inget annat.
+          </div>
+          <button className="btn-ghost" onClick={() => setZen(false)}>
+            Avsluta fokusläge
+          </button>
+        </div>
+      )}
 
       <div className="card">
         <div className="card-title">Din fokusritual</div>

@@ -124,6 +124,37 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
     setCarryDismissed({ ...carryDismissed, [today]: true })
   }
 
+  const autopilot = () => {
+    const queue = unfinished.map((t) => t.text)
+    const majorText = queue.shift() ?? 'Dagens viktigaste sak — byt ut mig'
+    const mediumDefaults = ['30 min träning', '15 min om pengar', 'Rensa inkorgen']
+    const smallDefaults = [
+      'Bädda sängen',
+      'Drick 8 glas vatten',
+      '5 min uppstädning',
+      'Planera morgondagen',
+      'Kvällsreflektion',
+    ]
+    const mediums = [...queue.splice(0, 3)]
+    while (mediums.length < 3) mediums.push(mediumDefaults[mediums.length % 3])
+    const smalls = [...queue.splice(0, 5)]
+    for (const d of smallDefaults) {
+      if (smalls.length >= 5) break
+      if (!smalls.includes(d)) smalls.push(d)
+    }
+    const built: PlanTask[] = [
+      { id: uid(), text: majorText, tier: 'major' as Tier, done: false },
+      ...mediums.map((text) => ({ id: uid(), text, tier: 'medium' as Tier, done: false })),
+      ...smalls.map((text) => ({ id: uid(), text, tier: 'small' as Tier, done: false })),
+    ]
+    setPlans({
+      ...plans,
+      [today]: built,
+      [yesterday]: (plans[yesterday] ?? []).filter((t) => t.done),
+    })
+    setCarryDismissed({ ...carryDismissed, [today]: true })
+  }
+
   const saveJournal = () => {
     if (!journalDraft.stars && !journalDraft.good && !journalDraft.grateful) return
     setJournal({ ...journal, [today]: journalDraft })
@@ -280,6 +311,14 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
           1 stor, 3 mellanstora och 5 små uppgifter. Ät grodan 🐸 — börja med den
           stora.
         </div>
+
+        {tasks.length === 0 && (
+          <div className="add-row" style={{ marginTop: 0 }}>
+            <button className="btn" style={{ flex: 1 }} onClick={autopilot}>
+              🤖 Autopilot — fyll min dag
+            </button>
+          </div>
+        )}
 
         {tasks.length > 0 && (
           <>
