@@ -5,6 +5,8 @@ import type { RoutinePeriod, RoutineItem } from '../data'
 import type { PlanTask, Tier, Habit } from '../types'
 import type { TabId } from '../App'
 import { awardXp, XP } from '../xp'
+import { confetti } from '../confetti'
+import { meals, dailyQuotes } from '../data'
 
 interface JournalEntry {
   stars: number
@@ -71,7 +73,9 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
   const toggleTask = (id: string) => {
     const task = tasks.find((t) => t.id === id)
     if (task && !task.done) awardXp(`task:${task.tier}:${id}`, tierXp[task.tier])
-    setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)))
+    const next = tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t))
+    if (next.length > 0 && next.every((t) => t.done)) confetti()
+    setTasks(next)
   }
 
   const removeTask = (id: string) => setTasks(tasks.filter((t) => t.id !== id))
@@ -125,6 +129,15 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
   const hour = new Date().getHours()
   const greeting =
     hour < 5 ? 'God natt' : hour < 10 ? 'God morgon' : hour < 18 ? 'Hej' : 'God kväll'
+
+  const [mealPlan] = useStored<Record<number, string>>('pm.mealplan', {})
+  const weekdayIndex = (new Date().getDay() + 6) % 7
+  const todaysMeal = meals.find((m) => m.id === mealPlan[weekdayIndex])
+
+  const dayOfYear = Math.floor(
+    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000,
+  )
+  const quote = dailyQuotes[dayOfYear % dailyQuotes.length]
 
   return (
     <>
@@ -274,6 +287,20 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
         ))}
       </div>
 
+      {todaysMeal && (
+        <div className="card">
+          <button className="link-row" onClick={() => goTo('meals')}>
+            <div>
+              <div className="card-title">Dagens middag</div>
+              <div className="progress-label">
+                {todaysMeal.icon} {todaysMeal.name} — tryck för receptet
+              </div>
+            </div>
+            <span style={{ color: 'var(--gold)', fontSize: 20 }}>›</span>
+          </button>
+        </div>
+      )}
+
       <div className="card">
         <div className="card-title">Kvällsreflektion</div>
         {journalSaved ? (
@@ -342,11 +369,8 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
       </div>
 
       <div className="card">
-        <div className="card-title">Dagens påminnelse</div>
-        <div className="hint">
-          Klart är bättre än perfekt. Börja med något så litet att hjärnan inte kan
-          vägra — en minut räcker. 🌱
-        </div>
+        <div className="card-title">Dagens tanke</div>
+        <div className="hint">{quote}</div>
       </div>
     </>
   )

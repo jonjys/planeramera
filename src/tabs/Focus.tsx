@@ -52,7 +52,28 @@ export default function Focus() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running])
 
+  const chime = () => {
+    try {
+      const ctx = new AudioContext()
+      ;[0, 0.22, 0.44].forEach((t, i) => {
+        const osc = ctx.createOscillator()
+        const gain = ctx.createGain()
+        osc.connect(gain)
+        gain.connect(ctx.destination)
+        osc.frequency.value = i === 2 ? 1175 : 880
+        gain.gain.setValueAtTime(0.25, ctx.currentTime + t)
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.18)
+        osc.start(ctx.currentTime + t)
+        osc.stop(ctx.currentTime + t + 0.2)
+      })
+    } catch {
+      // ljud blockerat — inte kritiskt
+    }
+    navigator.vibrate?.([200, 100, 200])
+  }
+
   const notify = (title: string, body: string) => {
+    chime()
     if ('Notification' in window && Notification.permission === 'granted') {
       try {
         new Notification(title, { body })
