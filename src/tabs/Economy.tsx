@@ -64,6 +64,8 @@ export default function Economy() {
   const [goalTarget, setGoalTarget] = useState('')
   const [deposits, setDeposits] = useState<Record<string, string>>({})
 
+  const [budgets, setBudgets] = useStored<Record<string, number>>('pm.budgets', {})
+  const [editBudgets, setEditBudgets] = useState(false)
   const [subs, setSubs] = useStored<Subscription[]>('pm.subs', [])
   const [subName, setSubName] = useState('')
   const [subPrice, setSubPrice] = useState('')
@@ -266,18 +268,65 @@ export default function Economy() {
         </div>
       </div>
 
-      {byCategory.length > 0 && (
+      {(byCategory.length > 0 || editBudgets) && (
         <div className="card">
-          <div className="card-title">Vart pengarna går</div>
-          {byCategory.map((c) => (
-            <div className="cat-bar" key={c.name}>
-              <span className="name">{c.name}</span>
-              <div className="bar">
-                <div style={{ width: `${(c.total / maxCat) * 100}%` }} />
+          <div className="goal-head">
+            <div className="card-title">Vart pengarna går</div>
+            <button
+              className="row-del"
+              onClick={() => setEditBudgets(!editBudgets)}
+              style={{ color: 'var(--gold)' }}
+            >
+              {editBudgets ? 'Klar' : '✎ Budget'}
+            </button>
+          </div>
+          {editBudgets ? (
+            <>
+              <div className="card-sub">
+                Sätt månadsbudget per kategori — staplarna blir röda om du går över.
               </div>
-              <span className="amt">{kr(c.total)}</span>
-            </div>
-          ))}
+              {expenseCategories.map((c) => (
+                <div className="cat-bar" key={c}>
+                  <span className="name">{c}</span>
+                  <input
+                    inputMode="numeric"
+                    placeholder="Budget kr/mån…"
+                    value={budgets[c] || ''}
+                    onChange={(e) => {
+                      const v = Number(e.target.value)
+                      const next = { ...budgets }
+                      if (v > 0) next[c] = v
+                      else delete next[c]
+                      setBudgets(next)
+                    }}
+                    style={{ flex: 1, padding: '6px 10px' }}
+                  />
+                </div>
+              ))}
+            </>
+          ) : (
+            byCategory.map((c) => {
+              const budget = budgets[c.name]
+              const over = budget ? c.total > budget : false
+              const width = budget
+                ? Math.min(100, (c.total / budget) * 100)
+                : (c.total / maxCat) * 100
+              return (
+                <div className="cat-bar" key={c.name}>
+                  <span className="name">{c.name}</span>
+                  <div className="bar">
+                    <div
+                      className={over ? 'over' : ''}
+                      style={{ width: `${width}%` }}
+                    />
+                  </div>
+                  <span className="amt">
+                    {budget ? `${kr(c.total)} / ${kr(budget)}` : kr(c.total)}
+                  </span>
+                </div>
+              )
+            })
+          )}
         </div>
       )}
 
