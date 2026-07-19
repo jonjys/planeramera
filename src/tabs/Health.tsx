@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useStored, dateKey, addDays } from '../store'
 
 interface DayHealth {
@@ -6,6 +7,60 @@ interface DayHealth {
   sleep?: number
   weight?: number
   mood?: number
+}
+
+function ShortcutGuide() {
+  const [copied, setCopied] = useState(false)
+  const template = `${location.origin}/#health=steps:STEG,sleep:TIMMAR`
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(template)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2500)
+    } catch {
+      // urklipp blockerat — texten går att markera manuellt
+    }
+  }
+
+  return (
+    <div className="card">
+      <div className="card-title">🔗 Koppla Apple Hälsa</div>
+      <div className="card-sub">
+        Med appen Genvägar på iPhone kan Hälsa-datan hoppa in hit automatiskt —
+        ett tryck (eller en automation varje kväll):
+      </div>
+      <div className="check-row">
+        <span className="check-label">1. Öppna Genvägar → ny genväg</span>
+      </div>
+      <div className="check-row">
+        <span className="check-label">
+          2. Lägg till "Hitta hälsoexempel" för Steg (idag) och Sömn
+        </span>
+      </div>
+      <div className="check-row">
+        <span className="check-label">
+          3. Lägg till "Öppna URL" och klistra in mallen nedan — byt STEG och
+          TIMMAR mot variablerna från steg 2
+        </span>
+      </div>
+      <input
+        readOnly
+        value={template}
+        style={{ width: '100%', marginTop: 10, fontSize: 13 }}
+        onFocus={(e) => e.target.select()}
+      />
+      <div className="add-row">
+        <button className="btn-ghost" style={{ flex: 1 }} onClick={copy}>
+          {copied ? '✓ Kopierad' : 'Kopiera URL-mallen'}
+        </button>
+      </div>
+      <div className="hint" style={{ marginTop: 8 }}>
+        När genvägen körs öppnas appen och datan importeras automatiskt. Lägg den
+        i en automation kl 21 så sköter den sig själv.
+      </div>
+    </div>
+  )
 }
 
 const moods = ['😞', '😐', '🙂', '😄', '🤩']
@@ -158,6 +213,8 @@ export default function Health() {
         </div>
         <Spark data={series('sleep')} goal={SLEEP_GOAL} />
       </div>
+
+      <ShortcutGuide />
 
       <div className="card">
         <div className="card-title">Hara Hachi Bu</div>
