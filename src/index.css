@@ -1,0 +1,692 @@
+:root {
+  --bg: #0b0b0d;
+  --card: #16161a;
+  --card2: #1d1d23;
+  --border: #2a2a31;
+  --gold: #f2c14e;
+  --gold-dim: #b98f2e;
+  --text: #f5f2ea;
+  --muted: #9b978c;
+  --green: #6fcf7c;
+  --red: #e06c6c;
+  --radius: 14px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 16px 16px 96px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--text);
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  min-width: 0;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--gold-dim);
+}
+
+input::placeholder {
+  color: var(--muted);
+}
+
+/* ---------- header ---------- */
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 8px 0 16px;
+}
+
+.app-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.app-title span {
+  color: var(--gold);
+}
+
+.app-date {
+  color: var(--muted);
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+/* ---------- nav ---------- */
+
+.tabbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(11, 11, 13, 0.92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  overflow-x: auto;
+  z-index: 10;
+}
+
+.tabbar button {
+  flex: 1;
+  max-width: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 2px;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.tabbar button .ico {
+  font-size: 19px;
+}
+
+.tabbar button.active {
+  color: var(--gold);
+  background: rgba(242, 193, 78, 0.08);
+}
+
+/* ---------- cards & sections ---------- */
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.card-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.card-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.hint {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ---------- checklist ---------- */
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(42, 42, 49, 0.6);
+}
+
+.check-row:last-child {
+  border-bottom: none;
+}
+
+.checkbox {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--bg);
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.checkbox.on {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.check-label {
+  flex: 1;
+  font-size: 15px;
+  text-align: left;
+}
+
+.check-label.done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.row-del {
+  color: var(--muted);
+  font-size: 16px;
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.row-del:hover {
+  color: var(--red);
+}
+
+/* ---------- progress ---------- */
+
+.progress {
+  height: 8px;
+  background: var(--card2);
+  border-radius: 99px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+
+.progress > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+  border-radius: 99px;
+  transition: width 0.3s;
+}
+
+.progress-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- pills / segments ---------- */
+
+.segments {
+  display: flex;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 3px;
+  margin-bottom: 14px;
+}
+
+.segments button {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.segments button.active {
+  background: var(--gold);
+  color: #14120a;
+}
+
+/* ---------- add row ---------- */
+
+.add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.add-row input {
+  flex: 1;
+}
+
+.btn {
+  background: var(--gold);
+  color: #14120a;
+  font-weight: 800;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn-ghost {
+  background: var(--card2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  font-weight: 700;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* ---------- 1-3-5 ---------- */
+
+.tier-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 14px 0 2px;
+}
+
+.tier-name {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.tier-count {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.frog {
+  font-size: 12px;
+  color: var(--green);
+}
+
+.celebrate {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(242, 193, 78, 0.12);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* ---------- habits grid ---------- */
+
+.habit-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.habit-grid th {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 700;
+  padding: 4px 2px;
+  text-align: center;
+}
+
+.habit-grid th.today-col {
+  color: var(--gold);
+}
+
+.habit-grid td.today-col .day-dot:not(.on) {
+  border-color: var(--gold-dim);
+}
+
+.habit-grid td {
+  padding: 4px 2px;
+  text-align: center;
+}
+
+.habit-grid td.habit-name {
+  text-align: left;
+  font-size: 13.5px;
+  padding-right: 6px;
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: transparent;
+}
+
+.day-dot.on {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #14120a;
+}
+
+.day-dot.future {
+  opacity: 0.3;
+}
+
+.streak {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ---------- pomodoro ---------- */
+
+.pomo {
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.pomo-phase {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.pomo-time {
+  font-size: 64px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  margin: 8px 0 4px;
+}
+
+.pomo-rounds {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.pomo-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* ---------- economy ---------- */
+
+.big-number {
+  font-size: 30px;
+  font-weight: 800;
+  margin: 2px 0;
+}
+
+.stat-row {
+  display: flex;
+  gap: 10px;
+}
+
+.stat-row .card {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.cat-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 7px 0;
+  font-size: 13px;
+}
+
+.cat-bar .name {
+  width: 84px;
+  color: var(--muted);
+}
+
+.cat-bar .bar {
+  flex: 1;
+  height: 8px;
+  background: var(--card2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.cat-bar .bar > div {
+  height: 100%;
+  background: var(--gold-dim);
+  border-radius: 99px;
+}
+
+.cat-bar .amt {
+  min-width: 70px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.expense-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(42, 42, 49, 0.6);
+  font-size: 14px;
+}
+
+.expense-row:last-child {
+  border-bottom: none;
+}
+
+.expense-row .date {
+  color: var(--muted);
+  font-size: 12px;
+  min-width: 46px;
+}
+
+.expense-row .note {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.expense-row .amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.goal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.goal-name {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.goal-nums {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.goal {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(42, 42, 49, 0.6);
+}
+
+.goal:last-child {
+  border-bottom: none;
+}
+
+.goal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.goal-actions input {
+  width: 110px;
+  padding: 7px 10px;
+}
+
+.goal-actions .btn,
+.goal-actions .btn-ghost {
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+/* ---------- chips ---------- */
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.chip {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 7px 13px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.chip:active {
+  border-color: var(--gold);
+}
+
+.chip.used {
+  opacity: 0.35;
+}
+
+/* ---------- principles ---------- */
+
+.principle {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.principle .p-icon {
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.principle h3 {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.principle .p-sub {
+  color: var(--gold);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.principle ul {
+  list-style: none;
+}
+
+.principle li {
+  font-size: 13.5px;
+  color: var(--muted);
+  padding: 2px 0 2px 14px;
+  position: relative;
+}
+
+.principle li::before {
+  content: '•';
+  color: var(--gold);
+  position: absolute;
+  left: 0;
+}
+
+.guide-section {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 22px 0 10px;
+}
+
+/* ---------- misc ---------- */
+
+.empty {
+  color: var(--muted);
+  font-size: 13.5px;
+  font-style: italic;
+  padding: 8px 0;
+}
+
+.link-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 4px 0;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.result-line {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(42, 42, 49, 0.6);
+  font-size: 14px;
+}
+
+.result-line:last-child {
+  border-bottom: none;
+}
+
+.result-line .value {
+  font-weight: 800;
+  color: var(--gold);
+  font-variant-numeric: tabular-nums;
+}
