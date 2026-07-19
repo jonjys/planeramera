@@ -5,6 +5,7 @@ import type { Pack } from './pack'
 import { xpTotal, levelInfo } from './xp'
 import { confetti } from './confetti'
 import Onboarding from './Onboarding'
+import SmartInput from './components/SmartInput'
 import Today from './tabs/Today'
 import Routines from './tabs/Routines'
 import Habits from './tabs/Habits'
@@ -79,6 +80,25 @@ export default function App() {
 
   const [toast, setToast] = useState('')
   const [shared, setShared] = useState<string | null>(readSharedText)
+  const [dataVersion, setDataVersion] = useState(0)
+
+  // tema appliceras på html-elementet; light-varianten ligger i CSS-variabler
+  useEffect(() => {
+    try {
+      const theme = JSON.parse(localStorage.getItem('pm.theme') ?? '"dark"')
+      document.documentElement.dataset.theme = theme
+    } catch {
+      document.documentElement.dataset.theme = 'dark'
+    }
+  }, [])
+
+  // smart inmatning skriver direkt till localStorage — bumpa nyckeln så
+  // aktiv flik läser om sitt state
+  useEffect(() => {
+    const bump = () => setDataVersion((v) => v + 1)
+    window.addEventListener('pm-data', bump)
+    return () => window.removeEventListener('pm-data', bump)
+  }, [])
 
   useEffect(() => {
     const update = () => setXp(xpTotal())
@@ -240,17 +260,27 @@ export default function App() {
         </div>
       )}
 
-      {tab === 'today' && <Today goTo={setTab} />}
-      {tab === 'routines' && <Routines />}
-      {tab === 'habits' && <Habits />}
-      {tab === 'focus' && <Focus />}
-      {tab === 'health' && <Health />}
-      {tab === 'economy' && <Economy />}
-      {tab === 'meals' && <Meals />}
-      {tab === 'shopping' && <Shopping />}
-      {tab === 'discover' && <Discover />}
-      {tab === 'profile' && <Profile />}
-      {tab === 'guide' && <Guide />}
+      {/* fokus-fliken remountas inte av datastötar — det skulle nolla en löpande timer */}
+      <div key={tab === 'focus' ? 'focus' : dataVersion}>
+        {tab === 'today' && <Today goTo={setTab} />}
+        {tab === 'routines' && <Routines />}
+        {tab === 'habits' && <Habits />}
+        {tab === 'focus' && <Focus />}
+        {tab === 'health' && <Health />}
+        {tab === 'economy' && <Economy />}
+        {tab === 'meals' && <Meals />}
+        {tab === 'shopping' && <Shopping />}
+        {tab === 'discover' && <Discover />}
+        {tab === 'profile' && <Profile />}
+        {tab === 'guide' && <Guide />}
+      </div>
+
+      <SmartInput
+        onDone={(msg) => {
+          setToast(msg)
+          setTimeout(() => setToast(''), 2500)
+        }}
+      />
 
       {moreOpen && (
         <div className="sheet-backdrop" onClick={() => setMoreOpen(false)}>

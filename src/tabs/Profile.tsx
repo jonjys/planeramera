@@ -31,6 +31,7 @@ interface Achievement {
 
 export default function Profile() {
   const [name, setName] = useStored('pm.user.name', '')
+  const [theme, setTheme] = useStored<'dark' | 'light'>('pm.theme', 'dark')
   const [follows] = useStored<Follow[]>('pm.follows', [])
   const [habitDone] = useStored<Record<string, string[]>>('pm.habits.done', {})
   const [habits] = useStored<Habit[]>('pm.habits.items', defaultHabits)
@@ -193,6 +194,20 @@ export default function Profile() {
           onChange={(e) => setName(e.target.value)}
           style={{ width: '100%', marginBottom: 14 }}
         />
+        <div className="segments" style={{ marginBottom: 14 }}>
+          {(['dark', 'light'] as const).map((t) => (
+            <button
+              key={t}
+              className={theme === t ? 'active' : ''}
+              onClick={() => {
+                setTheme(t)
+                document.documentElement.dataset.theme = t
+              }}
+            >
+              {t === 'dark' ? '🌙 Mörkt' : '☀️ Ljust'}
+            </button>
+          ))}
+        </div>
         <div className="goal-head">
           <span className="goal-name">⭐ Nivå {level}</span>
           <span className="goal-nums">
