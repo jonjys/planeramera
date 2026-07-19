@@ -4,6 +4,7 @@ import Routines from './tabs/Routines'
 import Habits from './tabs/Habits'
 import Focus from './tabs/Focus'
 import Economy from './tabs/Economy'
+import Meals from './tabs/Meals'
 import Shopping from './tabs/Shopping'
 import Guide from './tabs/Guide'
 
@@ -13,6 +14,7 @@ const tabs = [
   { id: 'habits', label: 'Vanor', icon: '📊' },
   { id: 'focus', label: 'Fokus', icon: '🍅' },
   { id: 'economy', label: 'Ekonomi', icon: '💰' },
+  { id: 'meals', label: 'Mat', icon: '🍳' },
   { id: 'shopping', label: 'Inköp', icon: '🛒' },
   { id: 'guide', label: 'Guide', icon: '📖' },
 ] as const
@@ -42,6 +44,7 @@ export default function App() {
       {tab === 'habits' && <Habits />}
       {tab === 'focus' && <Focus />}
       {tab === 'economy' && <Economy />}
+      {tab === 'meals' && <Meals />}
       {tab === 'shopping' && <Shopping />}
       {tab === 'guide' && <Guide />}
 

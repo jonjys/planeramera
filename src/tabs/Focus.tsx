@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { pad, useStored } from '../store'
+import { pad, uid, useStored } from '../store'
 import { focusMethods } from '../data'
 
 const WORK = 25 * 60
@@ -21,21 +21,37 @@ const phaseLength: Record<Phase, number> = {
   longbreak: LONG_BREAK,
 }
 
+interface NotToDo {
+  id: string
+  text: string
+}
+
 export default function Focus() {
   const [phase, setPhase] = useState<Phase>('work')
   const [left, setLeft] = useState(WORK)
   const [running, setRunning] = useState(false)
-  const [rounds, setRounds] = useStored('pm.pomo.rounds.' + new Date().toDateString(), 0)
-  const interval = useRef<ReturnType<typeof setInterval>>()
+  const [rounds, setRounds] = useStored(
+    'pm.pomo.rounds.' + new Date().toDateString(),
+    0,
+  )
+  const [notToDo, setNotToDo] = useStored<NotToDo[]>('pm.nottodo', [])
+  const [draft, setDraft] = useState('')
+  // klockbaserad deadline i stället för att räkna intervall — driftar inte
+  // när fliken ligger i bakgrunden
+  const endAt = useRef(0)
 
   useEffect(() => {
     if (!running) return
-    interval.current = setInterval(() => setLeft((s) => s - 1), 1000)
-    return () => clearInterval(interval.current)
+    endAt.current = Date.now() + left * 1000
+    const t = setInterval(() => {
+      setLeft(Math.max(0, Math.round((endAt.current - Date.now()) / 1000)))
+    }, 250)
+    return () => clearInterval(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running])
 
   useEffect(() => {
-    if (left > 0) return
+    if (!running || left > 0) return
     if (phase === 'work') {
       const nextRounds = rounds + 1
       setRounds(nextRounds)
@@ -48,7 +64,19 @@ export default function Focus() {
       setLeft(WORK)
     }
     setRunning(false)
-  }, [left]) // eslint-disable-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [left, running])
+
+  const timeStr = `${pad(Math.floor(left / 60))}:${pad(left % 60)}`
+
+  useEffect(() => {
+    document.title = running
+      ? `${timeStr} · ${phaseLabel[phase]} — Planera Mera`
+      : 'Planera Mera'
+    return () => {
+      document.title = 'Planera Mera'
+    }
+  }, [timeStr, running, phase])
 
   const reset = () => {
     setRunning(false)
@@ -66,19 +94,19 @@ export default function Focus() {
     }
   }
 
+  const addNotToDo = () => {
+    const text = draft.trim()
+    if (!text) return
+    setNotToDo([...notToDo, { id: uid(), text }])
+    setDraft('')
+  }
+
   return (
     <>
       <div className="card pomo">
         <div className="pomo-phase">{phaseLabel[phase]}</div>
-        <div className="pomo-time">
-          {pad(Math.floor(left / 60))}:{pad(left % 60)}
-        </div>
-        <div className="pomo-rounds">
-          🍅 {rounds} rundor idag
-          {rounds > 0 && rounds % ROUNDS_BEFORE_LONG === 0 && phase !== 'work'
-            ? ' — dags för lång paus!'
-            : ''}
-        </div>
+        <div className="pomo-time">{timeStr}</div>
+        <div className="pomo-rounds">🍅 {rounds} rundor idag</div>
         <div className="pomo-controls">
           <button className="btn" onClick={() => setRunning(!running)}>
             {running ? 'Pausa' : 'Starta'}
@@ -109,6 +137,36 @@ export default function Focus() {
         </div>
         <div className="check-row">
           <span className="check-label">4. Starta timern och räkna 5-4-3-2-1 🚀</span>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-title">Min "inte göra"-lista</div>
+        <div className="card-sub">
+          Det du INTE gör skyddar din energi. Scrolla under fokuspass? Kolla mejl
+          var femte minut? Skriv upp det här.
+        </div>
+        {notToDo.map((n) => (
+          <div className="check-row" key={n.id}>
+            <span className="check-label">🚫 {n.text}</span>
+            <button
+              className="row-del"
+              onClick={() => setNotToDo(notToDo.filter((x) => x.id !== n.id))}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <div className="add-row">
+          <input
+            value={draft}
+            placeholder="T.ex. Sociala medier före lunch…"
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addNotToDo()}
+          />
+          <button className="btn" onClick={addNotToDo}>
+            +
+          </button>
         </div>
       </div>
 

@@ -89,6 +89,11 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
             <div className="progress-label">
               {doneCount} av {tasks.length} klara
             </div>
+            {doneCount === tasks.length && (
+              <div className="celebrate">
+                🎉 Allt klart! Disciplin idag, frihet imorgon.
+              </div>
+            )}
           </>
         )}
 

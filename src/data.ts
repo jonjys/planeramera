@@ -210,6 +210,87 @@ export const moneyHabits: Principle[] = [
   },
 ]
 
+export interface Meal {
+  id: string
+  icon: string
+  name: string
+  base: string
+  ingredients: string[]
+  steps: string[]
+}
+
+export const meals: Meal[] = [
+  {
+    id: 'meal1',
+    icon: '🍳',
+    name: 'Stekt ris med ägg',
+    base: 'Ris — billigt, mättande, funkar till allt',
+    ingredients: ['Ris', 'Ägg', 'Frysta grönsaker', 'Fryst vitlök', 'Soja'],
+    steps: [
+      'Koka riset (eller använd gårdagens — ännu bättre).',
+      'Stek vitlök och frysta grönsaker i panna.',
+      'Rör ner riset, tryck allt åt sidan och stek äggen i samma panna.',
+      'Blanda, toppa med soja. Klart på 15 minuter.',
+    ],
+  },
+  {
+    id: 'meal2',
+    icon: '🍝',
+    name: 'Krämig tomatpasta',
+    base: 'Pasta — snabbt och nästan omöjligt att misslyckas med',
+    ingredients: ['Pasta', 'Tomatsås', 'Fryst vitlök', 'Kryddor'],
+    steps: [
+      'Koka pastan, spara en kopp pastavatten.',
+      'Värm tomatsås med vitlök och kryddor.',
+      'Blanda pasta och sås, späd med pastavatten tills det blir krämigt.',
+    ],
+  },
+  {
+    id: 'meal3',
+    icon: '🌶️',
+    name: 'Enkel bönchili',
+    base: 'Bönor — billigt protein som mättar länge',
+    ingredients: ['Bönor', 'Tomatsås', 'Ris', 'Kryddor', 'Fryst vitlök'],
+    steps: [
+      'Fräs vitlök, häll i bönor och tomatsås.',
+      'Krydda med chili, spiskummin och paprikapulver. Sjud 10 minuter.',
+      'Servera med ris. Gör stor sats — blir bättre dagen efter.',
+    ],
+  },
+  {
+    id: 'meal4',
+    icon: '🍗',
+    name: 'Kycklingbowl',
+    base: 'Kyckling — protein som funkar hela veckan',
+    ingredients: ['Kyckling', 'Ris', 'Frysta grönsaker', 'Kryddor'],
+    steps: [
+      'Stek kycklingen i bitar med kryddor.',
+      'Koka ris och ånga grönsakerna.',
+      'Bygg bowlen. Laga dubbel sats — lunch imorgon är löst.',
+    ],
+  },
+  {
+    id: 'meal5',
+    icon: '🥚',
+    name: 'Omelett med det du har',
+    base: 'Ägg — snabbaste middagen som finns',
+    ingredients: ['Ägg', 'Frysta grönsaker', 'Fullkornsbröd'],
+    steps: [
+      'Vispa 3 ägg med en nypa salt.',
+      'Stek grönsaker, häll över äggen, låt stelna på låg värme.',
+      'Servera med bröd. Klart på 10 minuter.',
+    ],
+  },
+]
+
+export const cookingEasier = [
+  'Ha fryst vitlök och frysta grönsaker hemma — alltid redo',
+  'Laga stora satser, ät i flera dagar',
+  'Håll skafferiet organiserat så du ser vad du har',
+  'Upprepa måltider utan dåligt samvete — enkelhet vinner',
+  'Kolla kylen innan du handlar',
+]
+
 export const memoryTips: Principle[] = [
   {
     icon: '🧠',

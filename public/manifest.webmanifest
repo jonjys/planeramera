@@ -1,0 +1,18 @@
+{
+  "name": "Planera Mera",
+  "short_name": "PlaneraMera",
+  "description": "Planering, rutiner, vanor, fokus och ekonomi — allt på ett ställe.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0b0b0d",
+  "theme_color": "#0b0b0d",
+  "lang": "sv",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

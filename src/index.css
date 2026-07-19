@@ -331,6 +331,18 @@ input::placeholder {
   color: var(--green);
 }
 
+.celebrate {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(242, 193, 78, 0.12);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
 /* ---------- habits grid ---------- */
 
 .habit-grid {
