@@ -77,6 +77,82 @@ export const beforeYouGo = [
   'Använd liknande ingredienser i flera måltider',
 ]
 
+export interface CreatorPack {
+  emoji: string
+  desc: string
+  pack: {
+    v: 1
+    name: string
+    author: string
+    routines?: Partial<Record<RoutinePeriod, string[]>>
+    habits?: string[]
+    notToDo?: string[]
+    shopping?: string[]
+  }
+}
+
+export const creatorPacks: CreatorPack[] = [
+  {
+    emoji: '🌅',
+    desc: 'För dig som vill äga morgonen — rutiner och vanor som bygger momentum före kl 09.',
+    pack: {
+      v: 1,
+      name: 'Morgonmänniskan',
+      author: 'Planera Mera',
+      habits: ['Uppe före 06:30', 'Träning på morgonen', '10 min läsning', 'Ingen mobil första timmen'],
+      routines: {
+        daily: ['Drick ett glas vatten direkt', 'Bädda sängen', '5 min stretching', 'Planera dagens 1-3-5'],
+      },
+      notToDo: ['Snooza', 'Sociala medier före frukost'],
+    },
+  },
+  {
+    emoji: '💰',
+    desc: 'Kom igång med penningvanorna — spara först, spåra allt och lär dig varje dag.',
+    pack: {
+      v: 1,
+      name: 'Ekonomistarten',
+      author: 'Planera Mera',
+      habits: ['Logga dagens utgifter', '15 min om pengar', 'Ingen impulshandel idag'],
+      routines: {
+        weekly: ['Gå igenom veckans utgifter', 'Planera veckans måltider'],
+        monthly: ['Betala dig själv först — överför 10 %', 'Investera månadens belopp', 'Granska prenumerationer'],
+      },
+      notToDo: ['Beställa hemleverans på vardagar', 'Handla utan lista'],
+    },
+  },
+  {
+    emoji: '📚',
+    desc: 'Pluggupplägget — fokuspass, repetition och en hjärna som får vila.',
+    pack: {
+      v: 1,
+      name: 'Studenten',
+      author: 'Planera Mera',
+      habits: ['4 pomodoro-pass', 'Repetera anteckningar', 'I säng före 23', 'Träning eller promenad'],
+      routines: {
+        daily: ['Planera morgondagens plugg', 'Städa skrivbordet efter dagen'],
+        weekly: ['Veckoöversikt: vad ska in nästa vecka?'],
+      },
+      notToDo: ['Mobilen på skrivbordet under fokuspass', 'Plugga i sängen'],
+    },
+  },
+  {
+    emoji: '🏡',
+    desc: 'Hemmet på autopilot — basvaror hemma och ett kök som alltid funkar.',
+    pack: {
+      v: 1,
+      name: 'Hemmafixaren',
+      author: 'Planera Mera',
+      habits: ['Städa 15 min', 'Laga mat hemma'],
+      routines: {
+        daily: ['Diska direkt efter maten', 'Återställ vardagsrummet före läggdags'],
+        weekly: ['Storlaga 2 måltider', 'Inventera kyl och frys'],
+      },
+      shopping: ['Ris', 'Bönor', 'Ägg', 'Pasta', 'Frysta grönsaker', 'Tomatsås'],
+    },
+  },
+]
+
 export interface Principle {
   icon: string
   title: string
