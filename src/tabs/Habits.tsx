@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStored, dateKey, weekDates, addDays, uid } from '../store'
 import { defaultHabits } from '../data'
 import type { Habit } from '../types'
+import { awardXp, XP } from '../xp'
 
 const dayNames = ['M', 'T', 'O', 'T', 'F', 'L', 'S']
 
@@ -32,6 +33,7 @@ export default function Habits() {
   const toggle = (habitId: string, day: string) => {
     if (day > today) return
     const dates = done[habitId] ?? []
+    if (!dates.includes(day)) awardXp(`habit:${habitId}:${day}`, XP.habit)
     setDone({
       ...done,
       [habitId]: dates.includes(day)

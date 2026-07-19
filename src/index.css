@@ -490,6 +490,10 @@ input::placeholder {
   border-radius: 99px;
 }
 
+.cat-bar .bar > div.over {
+  background: var(--red);
+}
+
 .cat-bar .amt {
   min-width: 70px;
   text-align: right;
@@ -713,6 +717,276 @@ input::placeholder {
   border-color: var(--gold);
   opacity: 1;
   background: rgba(242, 193, 78, 0.1);
+}
+
+/* ---------- more-sheet ---------- */
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 20;
+}
+
+.sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(58px + env(safe-area-inset-bottom));
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  border-radius: 18px 18px 0 0;
+  padding: 18px 14px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.sheet-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 4px;
+  border-radius: 12px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sheet-item .ico {
+  font-size: 22px;
+}
+
+.sheet-item.active {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* ---------- gamification ---------- */
+
+.lvl-badge {
+  background: rgba(242, 193, 78, 0.12);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  font-weight: 800;
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 99px;
+}
+
+.greeting {
+  font-size: 19px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.greeting span {
+  color: var(--gold);
+}
+
+.stars {
+  display: flex;
+  gap: 6px;
+  margin: 6px 0 4px;
+}
+
+.star {
+  font-size: 30px;
+  color: var(--border);
+  padding: 2px 4px;
+  transition: color 0.15s;
+}
+
+.star.on {
+  color: var(--gold);
+}
+
+.heatmap {
+  display: flex;
+  gap: 3px;
+  justify-content: space-between;
+}
+
+.heat-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.heat-cell {
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+}
+
+.heat-cell.i1 {
+  background: rgba(242, 193, 78, 0.28);
+  border-color: transparent;
+}
+
+.heat-cell.i2 {
+  background: rgba(242, 193, 78, 0.6);
+  border-color: transparent;
+}
+
+.heat-cell.i3 {
+  background: var(--gold);
+  border-color: transparent;
+}
+
+.heat-cell.today {
+  border: 1px solid var(--gold);
+}
+
+.heat-cell.future {
+  opacity: 0.25;
+}
+
+.ach-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 420px) {
+  .ach-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.ach {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+  opacity: 0.45;
+}
+
+.ach.on {
+  opacity: 1;
+  border-color: var(--gold-dim);
+  background: rgba(242, 193, 78, 0.07);
+}
+
+.ach-icon {
+  font-size: 26px;
+}
+
+.ach-title {
+  font-size: 12px;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.ach-desc {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ---------- onboarding ---------- */
+
+.onboard {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 100;
+}
+
+.onboard-box {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.onboard-logo {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.onboard-logo span {
+  color: var(--gold);
+}
+
+.onboard-box h2 {
+  font-size: 21px;
+  margin-bottom: 8px;
+}
+
+.onboard-box p {
+  color: var(--muted);
+  font-size: 14.5px;
+  margin-bottom: 18px;
+}
+
+.onboard-box input {
+  width: 100%;
+  text-align: center;
+  font-size: 16px;
+}
+
+.onboard-btn {
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px;
+  font-size: 15px;
+}
+
+.onboard-skip {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.onboard-packs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.onboard-pack {
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.onboard-pack.on {
+  border-color: var(--gold);
+  background: rgba(242, 193, 78, 0.08);
+}
+
+.op-emoji {
+  font-size: 28px;
+}
+
+.op-name {
+  font-size: 13.5px;
+  font-weight: 700;
 }
 
 /* ---------- misc ---------- */

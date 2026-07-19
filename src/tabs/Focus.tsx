@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { dateKey, pad, uid, useStored } from '../store'
 import { focusMethods } from '../data'
+import { awardXp, XP } from '../xp'
 
 const WORK = 25 * 60
 const BREAK = 5 * 60
@@ -66,6 +67,7 @@ export default function Focus() {
     if (phase === 'work') {
       const nextRounds = rounds + 1
       setRounds(nextRounds)
+      awardXp(`pomo:${dateKey()}:${nextRounds}`, XP.pomodoro)
       const next: Phase =
         nextRounds % ROUNDS_BEFORE_LONG === 0 ? 'longbreak' : 'break'
       setPhase(next)

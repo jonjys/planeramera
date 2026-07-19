@@ -5,6 +5,15 @@ dagligt verktyg — mörkt tema med guld, byggd för mobilen.
 
 ## Funktioner
 
+- **Onboarding** — välkomstflöde med namn och valbart startpaket.
+- **XP & nivåer** — poäng för klara uppgifter, vanor, rutiner, fokuspass och
+  reflektioner; nivåbadge i sidhuvudet.
+- **Profil** — nivå och XP, veckans siffror, aktivitets-heatmap (12 veckor),
+  utmärkelser, vilka paket du följer och säkerhetskopiering.
+- **Utforska** — skapa delningspaket av dina listor och följ andras via länk;
+  fyra inbyggda kreatörspaket.
+- **Kvällsreflektion** — betygsätt dagen och skriv ner vad som gick bra.
+
 - **Idag** — dagsplan enligt 1-3-5-regeln (1 stor, 3 mellanstora, 5 små
   uppgifter), "ät grodan först", snabböversikt av rutiner och vanor.
 - **Rutiner** — minsta hemrutin som checklistor: dagligt, veckovis och

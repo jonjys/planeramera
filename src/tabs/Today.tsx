@@ -1,9 +1,22 @@
 import { useState } from 'react'
-import { useStored, dateKey, weekKey, monthKey, uid } from '../store'
+import { useStored, dateKey, weekKey, monthKey, uid, addDays } from '../store'
 import { defaultRoutines, defaultHabits } from '../data'
 import type { RoutinePeriod, RoutineItem } from '../data'
 import type { PlanTask, Tier, Habit } from '../types'
 import type { TabId } from '../App'
+import { awardXp, XP } from '../xp'
+
+interface JournalEntry {
+  stars: number
+  good: string
+  grateful: string
+}
+
+const tierXp: Record<Tier, number> = {
+  major: XP.taskMajor,
+  medium: XP.taskMedium,
+  small: XP.taskSmall,
+}
 
 const tierMeta: Record<Tier, { label: string; max: number }> = {
   major: { label: '1 stor uppgift', max: 1 },
@@ -29,6 +42,19 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
     medium: '',
     small: '',
   })
+  const [name] = useStored('pm.user.name', '')
+  const [journal, setJournal] = useStored<Record<string, JournalEntry>>(
+    'pm.journal',
+    {},
+  )
+  const [carryDismissed, setCarryDismissed] = useStored<Record<string, boolean>>(
+    'pm.carry.dismissed',
+    {},
+  )
+  const [journalDraft, setJournalDraft] = useState<JournalEntry>(
+    () => journal[dateKey()] ?? { stars: 0, good: '', grateful: '' },
+  )
+  const [journalSaved, setJournalSaved] = useState(() => !!journal[dateKey()])
 
   const tasks = plans[today] ?? []
 
@@ -42,8 +68,11 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
     setDrafts({ ...drafts, [tier]: '' })
   }
 
-  const toggleTask = (id: string) =>
+  const toggleTask = (id: string) => {
+    const task = tasks.find((t) => t.id === id)
+    if (task && !task.done) awardXp(`task:${task.tier}:${id}`, tierXp[task.tier])
     setTasks(tasks.map((t) => (t.id === id ? { ...t, done: !t.done } : t)))
+  }
 
   const removeTask = (id: string) => setTasks(tasks.filter((t) => t.id !== id))
 
@@ -64,6 +93,7 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
   const habitDoneToday = (h: Habit) => (habitDone[h.id] ?? []).includes(today)
   const toggleHabit = (h: Habit) => {
     const dates = habitDone[h.id] ?? []
+    if (!habitDoneToday(h)) awardXp(`habit:${h.id}:${today}`, XP.habit)
     setHabitDone({
       ...habitDone,
       [h.id]: habitDoneToday(h)
@@ -72,8 +102,65 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
     })
   }
 
+  const yesterday = dateKey(addDays(new Date(), -1))
+  const unfinished = (plans[yesterday] ?? []).filter((t) => !t.done)
+  const showCarry = unfinished.length > 0 && !carryDismissed[today]
+
+  const carryOver = () => {
+    setPlans({
+      ...plans,
+      [today]: [...tasks, ...unfinished.map((t) => ({ ...t, id: uid() }))],
+      [yesterday]: (plans[yesterday] ?? []).filter((t) => t.done),
+    })
+    setCarryDismissed({ ...carryDismissed, [today]: true })
+  }
+
+  const saveJournal = () => {
+    if (!journalDraft.stars && !journalDraft.good && !journalDraft.grateful) return
+    setJournal({ ...journal, [today]: journalDraft })
+    awardXp(`journal:${today}`, XP.journal)
+    setJournalSaved(true)
+  }
+
+  const hour = new Date().getHours()
+  const greeting =
+    hour < 5 ? 'God natt' : hour < 10 ? 'God morgon' : hour < 18 ? 'Hej' : 'God kväll'
+
   return (
     <>
+      {name && (
+        <div className="greeting">
+          {greeting}, <span>{name}</span>! 👋
+        </div>
+      )}
+
+      {showCarry && (
+        <div className="card" style={{ borderColor: 'var(--gold-dim)' }}>
+          <div className="card-title">Från igår</div>
+          <div className="card-sub">
+            Du har {unfinished.length}{' '}
+            {unfinished.length === 1 ? 'ouppklarad uppgift' : 'ouppklarade uppgifter'}{' '}
+            från igår. Klart är bättre än perfekt — ta med dem?
+          </div>
+          {unfinished.map((t) => (
+            <div className="check-row" key={t.id}>
+              <span className="check-label">{t.text}</span>
+            </div>
+          ))}
+          <div className="add-row">
+            <button className="btn" style={{ flex: 1 }} onClick={carryOver}>
+              Flytta till idag
+            </button>
+            <button
+              className="btn-ghost"
+              onClick={() => setCarryDismissed({ ...carryDismissed, [today]: true })}
+            >
+              Släpp dem
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="card">
         <div className="card-title">Dagens plan · 1-3-5</div>
         <div className="card-sub">
@@ -185,6 +272,73 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
             </span>
           </div>
         ))}
+      </div>
+
+      <div className="card">
+        <div className="card-title">Kvällsreflektion</div>
+        {journalSaved ? (
+          <>
+            <div className="card-sub">
+              Dagens betyg:{' '}
+              {'★'.repeat(journalDraft.stars) + '☆'.repeat(5 - journalDraft.stars)}
+            </div>
+            {journalDraft.good && (
+              <div className="check-row">
+                <span className="check-label">💪 {journalDraft.good}</span>
+              </div>
+            )}
+            {journalDraft.grateful && (
+              <div className="check-row">
+                <span className="check-label">🙏 {journalDraft.grateful}</span>
+              </div>
+            )}
+            <div className="add-row">
+              <button className="btn-ghost" onClick={() => setJournalSaved(false)}>
+                Ändra
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="card-sub">
+              30 sekunder innan du lägger dig — det bygger självinsikt.
+            </div>
+            <div className="stars">
+              {[1, 2, 3, 4, 5].map((s) => (
+                <button
+                  key={s}
+                  className={`star ${journalDraft.stars >= s ? 'on' : ''}`}
+                  onClick={() => setJournalDraft({ ...journalDraft, stars: s })}
+                >
+                  ★
+                </button>
+              ))}
+            </div>
+            <div className="add-row">
+              <input
+                value={journalDraft.good}
+                placeholder="Vad gick bra idag?"
+                onChange={(e) =>
+                  setJournalDraft({ ...journalDraft, good: e.target.value })
+                }
+              />
+            </div>
+            <div className="add-row">
+              <input
+                value={journalDraft.grateful}
+                placeholder="Vad är du tacksam för?"
+                onChange={(e) =>
+                  setJournalDraft({ ...journalDraft, grateful: e.target.value })
+                }
+              />
+            </div>
+            <div className="add-row">
+              <button className="btn" style={{ flex: 1 }} onClick={saveJournal}>
+                Spara reflektion (+{XP.journal} XP)
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="card">

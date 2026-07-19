@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useStored, dateKey, weekKey, monthKey, uid } from '../store'
 import { defaultRoutines } from '../data'
 import type { RoutinePeriod, RoutineItem } from '../data'
+import { awardXp, XP } from '../xp'
 
 const periodMeta: Record<RoutinePeriod, { label: string; reset: string }> = {
   daily: { label: 'Dagligt', reset: 'Nollställs varje dag' },
@@ -27,13 +28,15 @@ export default function Routines() {
   const doneIds = done[key] ?? []
   const list = items[period]
 
-  const toggle = (id: string) =>
+  const toggle = (id: string) => {
+    if (!doneIds.includes(id)) awardXp(`routine:${key}:${id}`, XP.routine)
     setDone({
       ...done,
       [key]: doneIds.includes(id)
         ? doneIds.filter((d) => d !== id)
         : [...doneIds, id],
     })
+  }
 
   const add = () => {
     const text = draft.trim()
