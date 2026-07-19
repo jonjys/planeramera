@@ -3,6 +3,7 @@ import { useStored } from './store'
 import { decodePack, mergePack, packSummary } from './pack'
 import type { Pack } from './pack'
 import { xpTotal, levelInfo } from './xp'
+import { confetti } from './confetti'
 import Onboarding from './Onboarding'
 import Today from './tabs/Today'
 import Routines from './tabs/Routines'
@@ -55,11 +56,27 @@ export default function App() {
     setMoreOpen(false)
   }
 
+  const [toast, setToast] = useState('')
+
   useEffect(() => {
     const update = () => setXp(xpTotal())
     window.addEventListener('pm-xp', update)
     return () => window.removeEventListener('pm-xp', update)
   }, [])
+
+  const { level } = levelInfo(xp)
+
+  useEffect(() => {
+    const last = Number(localStorage.getItem('pm.lastLevel') ?? '1')
+    if (level > last) {
+      localStorage.setItem('pm.lastLevel', String(level))
+      setToast(`⭐ Nivå ${level}! Snyggt jobbat!`)
+      confetti()
+      const t = setTimeout(() => setToast(''), 3500)
+      return () => clearTimeout(t)
+    }
+    if (level < last) localStorage.setItem('pm.lastLevel', String(level))
+  }, [level])
 
   const clearHash = () =>
     history.replaceState(null, '', location.pathname + location.search)
@@ -82,14 +99,13 @@ export default function App() {
     month: 'long',
   })
 
-  const { level } = levelInfo(xp)
-
   if (!onboarded) {
     return <Onboarding onDone={() => setOnboarded(true)} />
   }
 
   return (
     <>
+      {toast && <div className="toast">{toast}</div>}
       <header className="app-header">
         <div className="app-title">
           Planera<span>Mera</span>

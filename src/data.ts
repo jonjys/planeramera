@@ -359,6 +359,23 @@ export const meals: Meal[] = [
   },
 ]
 
+export const dailyQuotes = [
+  'Klart är bättre än perfekt. 🏺',
+  'En minut idag, en bättre du imorgon. 🌱',
+  'Vaga mål = vaga resultat. Tydliga mål = du vet exakt vad du ska göra. 🎯',
+  'Mycket prokrastinering är bara rädsla förklädd till tålamod. 🍃',
+  'System fungerar bättre än motivation. 🗂️',
+  'Ju färre beslut du tar, desto mindre mental trötthet. 🧠',
+  'Din hjärna är inte byggd för att lagra allt — skriv ner det. ✍️',
+  'Betala dig själv först. De pengarna är heliga. 💰',
+  'Små steg, stor förändring. 📊',
+  'Sluta vänta på motivation: 5-4-3-2-1 — kör. 🚀',
+  'Börja med det du har. Vänta inte på perfekta förhållanden. 🌅',
+  'Disciplin idag, frihet imorgon. ✨',
+  'En sak i taget. Multitasking är fokusets fiende. 1️⃣',
+  'Ät grodan först — resten av dagen blir lättare. 🐸',
+]
+
 export const cookingEasier = [
   'Ha fryst vitlök och frysta grönsaker hemma — alltid redo',
   'Laga stora satser, ät i flera dagar',
