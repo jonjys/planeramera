@@ -1015,6 +1015,39 @@ input::placeholder {
   font-size: 14px;
 }
 
+/* ---------- ai chat ---------- */
+
+.ai-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.ai-bubble {
+  max-width: 88%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.ai-bubble.user {
+  align-self: flex-end;
+  background: var(--gold);
+  color: #14120a;
+  font-weight: 600;
+  border-bottom-right-radius: 4px;
+}
+
+.ai-bubble.assistant {
+  align-self: flex-start;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+
 /* ---------- toast ---------- */
 
 .toast {

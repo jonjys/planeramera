@@ -18,6 +18,7 @@ import Economy from './tabs/Economy'
 import Meals from './tabs/Meals'
 import Shopping from './tabs/Shopping'
 import Discover from './tabs/Discover'
+import AiCoach from './tabs/AiCoach'
 import Profile from './tabs/Profile'
 import Guide from './tabs/Guide'
 
@@ -31,6 +32,7 @@ const tabs = [
   { id: 'meals', label: 'Mat', icon: '🍳' },
   { id: 'shopping', label: 'Inköp', icon: '🛒' },
   { id: 'discover', label: 'Utforska', icon: '🌍' },
+  { id: 'ai', label: 'AI-Coach', icon: '🤖' },
   { id: 'profile', label: 'Profil', icon: '👤' },
   { id: 'guide', label: 'Guide', icon: '📖' },
 ] as const
@@ -313,6 +315,7 @@ export default function App() {
         {tab === 'meals' && <Meals />}
         {tab === 'shopping' && <Shopping />}
         {tab === 'discover' && <Discover />}
+        {tab === 'ai' && <AiCoach />}
         {tab === 'profile' && <Profile />}
         {tab === 'guide' && <Guide />}
       </div>
