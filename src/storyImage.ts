@@ -6,8 +6,29 @@ export interface WeekStats {
   bestStreak: number
 }
 
-/** Genererar en story-bild (1080×1920) av veckan och öppnar delningsmenyn. */
 export async function shareWeekImage(stats: WeekStats) {
+  return shareStatsImage({
+    title: 'MIN VECKA',
+    subtitle: stats.name,
+    rows: [
+      ['⭐', `Nivå ${stats.level}`],
+      ['⚡', `${stats.weekXp} XP denna vecka`],
+      ['✅', `${stats.tasksDone} uppgifter klara`],
+      ['🔥', `${stats.bestStreak} dagars bästa streak`],
+    ],
+    filename: 'planeramera-min-vecka.png',
+  })
+}
+
+export interface StatsImage {
+  title: string
+  subtitle?: string
+  rows: [string, string][]
+  filename: string
+}
+
+/** Genererar en story-bild (1080×1920) och öppnar delningsmenyn. */
+export async function shareStatsImage(img: StatsImage) {
   const c = document.createElement('canvas')
   c.width = 1080
   c.height = 1920
@@ -29,21 +50,18 @@ export async function shareWeekImage(stats: WeekStats) {
 
   ctx.fillStyle = '#f5f2ea'
   ctx.font = '800 110px Sora, sans-serif'
-  ctx.fillText('MIN VECKA', 540, 360)
-  if (stats.name) {
+  ctx.fillText(img.title, 540, 360)
+  if (img.subtitle) {
     ctx.fillStyle = '#9b978c'
     ctx.font = '500 48px "Space Grotesk", sans-serif'
-    ctx.fillText(stats.name, 540, 440)
+    ctx.fillText(img.subtitle, 540, 440)
   }
 
-  const rows: [string, string][] = [
-    ['⭐', `Nivå ${stats.level}`],
-    ['⚡', `${stats.weekXp} XP denna vecka`],
-    ['✅', `${stats.tasksDone} uppgifter klara`],
-    ['🔥', `${stats.bestStreak} dagars bästa streak`],
-  ]
+  const rows = img.rows
+  const spacing = rows.length > 4 ? 210 : 240
+  const startY = rows.length > 4 ? 640 : 700
   rows.forEach(([icon, text], i) => {
-    const y = 700 + i * 240
+    const y = startY + i * spacing
     ctx.fillStyle = '#16161a'
     roundRect(ctx, 90, y - 120, 900, 190, 28)
     ctx.fill()
@@ -69,7 +87,7 @@ export async function shareWeekImage(stats: WeekStats) {
 
   const blob = await new Promise<Blob | null>((res) => c.toBlob(res, 'image/png'))
   if (!blob) return
-  const file = new File([blob], 'planeramera-min-vecka.png', { type: 'image/png' })
+  const file = new File([blob], img.filename, { type: 'image/png' })
   try {
     if (navigator.canShare?.({ files: [file] })) {
       await navigator.share({ files: [file], title: 'Min vecka' })

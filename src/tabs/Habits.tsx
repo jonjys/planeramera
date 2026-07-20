@@ -1,30 +1,17 @@
 import { useState } from 'react'
-import { useStored, dateKey, weekDates, addDays, uid } from '../store'
+import { useStored, dateKey, weekDates, uid } from '../store'
 import { defaultHabits } from '../data'
 import type { Habit } from '../types'
 import { awardXp, XP } from '../xp'
+import { streakWith } from '../streaks'
 
 const dayNames = ['M', 'T', 'O', 'T', 'F', 'L', 'S']
-
-function streak(dates: string[]): number {
-  const set = new Set(dates)
-  let count = 0
-  let cursor = new Date()
-  // streaken lever så länge idag eller igår är avbockad
-  if (!set.has(dateKey(cursor))) {
-    cursor = addDays(cursor, -1)
-    if (!set.has(dateKey(cursor))) return 0
-  }
-  while (set.has(dateKey(cursor))) {
-    count++
-    cursor = addDays(cursor, -1)
-  }
-  return count
-}
 
 export default function Habits() {
   const [habits, setHabits] = useStored<Habit[]>('pm.habits.items', defaultHabits)
   const [done, setDone] = useStored<Record<string, string[]>>('pm.habits.done', {})
+  const [frozen] = useStored<Record<string, string[]>>('pm.frozen', {})
+  const [freezes] = useStored<number>('pm.freezes', 0)
   const [draft, setDraft] = useState('')
 
   const today = dateKey()
@@ -59,10 +46,14 @@ export default function Habits() {
   return (
     <>
       <div className="card">
-        <div className="card-title">Veckans framsteg</div>
+        <div className="goal-head">
+          <div className="card-title">Veckans framsteg</div>
+          <span className="streak">🧊 {freezes} frysningar</span>
+        </div>
         <div className="card-sub">
-          Motivation ensam förändrar inte beteende — synliga framsteg gör det. Små
-          steg, stor förändring.
+          Motivation ensam förändrar inte beteende — synliga framsteg gör det.
+          Frysningar räddar streaks automatiskt när du missar en dag (du får en
+          per nivå-upp).
         </div>
 
         {habits.length === 0 && <div className="empty">Lägg till din första vana nedan.</div>}
@@ -86,28 +77,30 @@ export default function Habits() {
             <tbody>
               {habits.map((h) => {
                 const dates = done[h.id] ?? []
+                const ice = frozen[h.id] ?? []
                 return (
                   <tr key={h.id}>
                     <td className="habit-name">{h.name}</td>
                     {week.map((d, i) => {
                       const dk = dateKey(d)
                       const isFuture = dk > today
+                      const isFrozen = ice.includes(dk) && !dates.includes(dk)
                       return (
                         <td key={i} className={dk === today ? 'today-col' : ''}>
                           <button
                             className={`day-dot ${dates.includes(dk) ? 'on' : ''} ${
-                              isFuture ? 'future' : ''
-                            }`}
+                              isFrozen ? 'frozen' : ''
+                            } ${isFuture ? 'future' : ''}`}
                             onClick={() => toggle(h.id, dk)}
                             aria-label={dk}
                           >
-                            ✓
+                            {isFrozen ? '❄' : '✓'}
                           </button>
                         </td>
                       )
                     })}
                     <td>
-                      <span className="streak">🔥 {streak(dates)}</span>
+                      <span className="streak">🔥 {streakWith(dates, ice)}</span>
                     </td>
                   </tr>
                 )
