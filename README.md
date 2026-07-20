@@ -29,7 +29,39 @@ dagligt verktyg — mörkt tema med guld, byggd för mobilen.
   som referenskort.
 
 All data sparas lokalt i webbläsaren (localStorage) — ingen backend, inget
-konto.
+konto. Undantaget är **AI-Coachen** (se nedan), som kräver en liten
+serverfunktion för att prata med Claude.
+
+## AI-Coach 🤖
+
+En riktig konversations-agent byggd på Claude API (Vercel-serverfunktion i
+`api/agent.ts`). Den ser din aktuella data (dagsplan, vanor, ekonomi, hälsa)
+och kan både svara på frågor och agera åt dig — logga en utgift, lägga till
+en uppgift, handla in, bocka av en vana — genom ett strukturerat JSON-svar
+(`{reply, actions}`) som körs lokalt i din webbläsare. Ingen data lagras
+på servern; anropet går direkt till Anthropics API och tillbaka.
+
+**Kräver en miljövariabel i Vercel-projektet:**
+
+```
+ANTHROPIC_API_KEY=din-api-nyckel
+```
+
+Lägg till den under Vercel → ditt projekt → Settings → Environment
+Variables, och deploya om. Skaffa en nyckel på
+[console.anthropic.com](https://console.anthropic.com).
+
+Valfria miljövariabler:
+
+```
+ANTHROPIC_MODEL=claude-opus-4-8   # standard — byt t.ex. till claude-haiku-4-5 för lägre kostnad
+ANTHROPIC_EFFORT=medium           # low | medium | high | xhigh | max
+```
+
+Standardmodellen är Claude Opus 4.8 — Anthropics mest kapabla modell, vilket
+även är den dyraste. För en hobbyapp med låg trafik är kostnaden marginell,
+men om du vill sänka den går det bra att sätta `ANTHROPIC_MODEL=claude-haiku-4-5`
+för snabbare och billigare svar.
 
 ## Kom igång
 
