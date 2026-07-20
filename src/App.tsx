@@ -4,6 +4,9 @@ import { decodePack, mergePack, packSummary } from './pack'
 import type { Pack } from './pack'
 import { xpTotal, levelInfo } from './xp'
 import { confetti } from './confetti'
+import { dateKey, addDays } from './store'
+import { defaultHabits } from './data'
+import type { Habit } from './types'
 import Onboarding from './Onboarding'
 import SmartInput from './components/SmartInput'
 import Today from './tabs/Today'
@@ -173,13 +176,52 @@ export default function App() {
     const last = Number(localStorage.getItem('pm.lastLevel') ?? '1')
     if (level > last) {
       localStorage.setItem('pm.lastLevel', String(level))
-      setToast(`⭐ Nivå ${level}! Snyggt jobbat!`)
+      const freezes = Math.min(3, Number(localStorage.getItem('pm.freezes') ?? '0') + 1)
+      localStorage.setItem('pm.freezes', String(freezes))
+      setToast(`⭐ Nivå ${level}! +1 streak-frys 🧊`)
       confetti()
       const t = setTimeout(() => setToast(''), 3500)
       return () => clearTimeout(t)
     }
     if (level < last) localStorage.setItem('pm.lastLevel', String(level))
   }, [level])
+
+  // automatisk streak-räddning: om gårdagen missades och en frys finns,
+  // täcks gårdagen med en frys innan streaken hinner brytas
+  useEffect(() => {
+    try {
+      const habits = (JSON.parse(
+        localStorage.getItem('pm.habits.items') ?? 'null',
+      ) ?? defaultHabits) as Habit[]
+      const done = JSON.parse(
+        localStorage.getItem('pm.habits.done') ?? '{}',
+      ) as Record<string, string[]>
+      const frozen = JSON.parse(
+        localStorage.getItem('pm.frozen') ?? '{}',
+      ) as Record<string, string[]>
+      let freezes = Number(localStorage.getItem('pm.freezes') ?? '0')
+      const yesterday = dateKey(addDays(new Date(), -1))
+      const dayBefore = dateKey(addDays(new Date(), -2))
+      const saved: string[] = []
+      for (const h of habits) {
+        if (freezes <= 0) break
+        const covered = new Set([...(done[h.id] ?? []), ...(frozen[h.id] ?? [])])
+        if (!covered.has(yesterday) && covered.has(dayBefore)) {
+          frozen[h.id] = [...(frozen[h.id] ?? []), yesterday]
+          freezes--
+          saved.push(h.name)
+        }
+      }
+      if (saved.length) {
+        localStorage.setItem('pm.frozen', JSON.stringify(frozen))
+        localStorage.setItem('pm.freezes', String(freezes))
+        setToast(`🧊 Streak-frys räddade: ${saved.join(', ')}`)
+        setTimeout(() => setToast(''), 4500)
+      }
+    } catch {
+      // trasig lagring — hoppa över räddningen
+    }
+  }, [])
 
   const clearHash = () =>
     history.replaceState(null, '', location.pathname + location.search)

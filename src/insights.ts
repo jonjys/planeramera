@@ -23,11 +23,12 @@ export function getInsights(): Insight[] {
   const today = dateKey()
   const hour = new Date().getHours()
 
-  // streaks i fara
+  // streaks i fara (frysta dagar räknas som täckta)
   const habits = read<Habit[]>('pm.habits.items', defaultHabits)
   const habitDone = read<Record<string, string[]>>('pm.habits.done', {})
+  const frozen = read<Record<string, string[]>>('pm.frozen', {})
   for (const h of habits) {
-    const dates = new Set(habitDone[h.id] ?? [])
+    const dates = new Set([...(habitDone[h.id] ?? []), ...(frozen[h.id] ?? [])])
     if (dates.has(today)) continue
     let s = 0
     let cursor = addDays(new Date(), -1)

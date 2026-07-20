@@ -449,6 +449,12 @@ input::placeholder {
   opacity: 0.3;
 }
 
+.day-dot.frozen {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: rgba(127, 184, 240, 0.12);
+}
+
 .streak {
   font-size: 11px;
   color: var(--muted);
@@ -645,6 +651,12 @@ input::placeholder {
 
 .chip.used {
   opacity: 0.35;
+}
+
+.chip.on {
+  border-color: var(--gold);
+  color: var(--gold);
+  font-weight: 700;
 }
 
 /* ---------- principles ---------- */

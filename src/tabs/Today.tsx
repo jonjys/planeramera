@@ -124,6 +124,23 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
     setCarryDismissed({ ...carryDismissed, [today]: true })
   }
 
+  const [planOffset, setPlanOffset] = useState(1)
+  const [futureDraft, setFutureDraft] = useState('')
+  const upcoming = Array.from({ length: 7 }, (_, i) => addDays(new Date(), i + 1))
+  const dayShort = ['Sön', 'Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör']
+  const selectedDate = dateKey(addDays(new Date(), planOffset))
+  const futureTasks = plans[selectedDate] ?? []
+
+  const addFuture = () => {
+    const text = futureDraft.trim()
+    if (!text) return
+    setPlans({
+      ...plans,
+      [selectedDate]: [...futureTasks, { id: uid(), text, tier: 'small', done: false }],
+    })
+    setFutureDraft('')
+  }
+
   const autopilot = () => {
     const queue = unfinished.map((t) => t.text)
     const majorText = queue.shift() ?? 'Dagens viktigaste sak — byt ut mig'
@@ -424,6 +441,57 @@ export default function Today({ goTo }: { goTo: (t: TabId) => void }) {
             </span>
           </div>
         ))}
+      </div>
+
+      <div className="card">
+        <div className="card-title">Planera framåt</div>
+        <div className="card-sub">
+          Lägg uppgifter på kommande dagar — de dyker upp i dagsplanen när dagen
+          kommer.
+        </div>
+        <div className="chips">
+          {upcoming.map((d, i) => {
+            const dk = dateKey(d)
+            const count = (plans[dk] ?? []).length
+            return (
+              <button
+                key={dk}
+                className={`chip ${planOffset === i + 1 ? 'on' : ''}`}
+                onClick={() => setPlanOffset(i + 1)}
+              >
+                {dayShort[d.getDay()]} {d.getDate()}
+                {count > 0 && ` · ${count}`}
+              </button>
+            )
+          })}
+        </div>
+        {futureTasks.map((t) => (
+          <div className="check-row" key={t.id}>
+            <span className="check-label">{t.text}</span>
+            <button
+              className="row-del"
+              onClick={() =>
+                setPlans({
+                  ...plans,
+                  [selectedDate]: futureTasks.filter((x) => x.id !== t.id),
+                })
+              }
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <div className="add-row">
+          <input
+            value={futureDraft}
+            placeholder={`Uppgift ${dayShort[upcoming[planOffset - 1].getDay()].toLowerCase()}dag…`}
+            onChange={(e) => setFutureDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addFuture()}
+          />
+          <button className="btn" onClick={addFuture}>
+            +
+          </button>
+        </div>
       </div>
 
       {todaysMeal && (

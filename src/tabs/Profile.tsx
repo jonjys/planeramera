@@ -3,24 +3,10 @@ import { xpTotal, xpLog, xpDays, levelInfo } from '../xp'
 import { defaultHabits } from '../data'
 import Backup from '../components/Backup'
 import { Bars, LineChart } from '../components/Charts'
-import { shareWeekImage } from '../storyImage'
+import { shareWeekImage, shareStatsImage } from '../storyImage'
+import { streakWith } from '../streaks'
 import type { Follow } from '../pack'
 import type { Expense, Habit, PlanTask } from '../types'
-
-function streak(dates: string[]): number {
-  const set = new Set(dates)
-  let count = 0
-  let cursor = new Date()
-  if (!set.has(dateKey(cursor))) {
-    cursor = addDays(cursor, -1)
-    if (!set.has(dateKey(cursor))) return 0
-  }
-  while (set.has(dateKey(cursor))) {
-    count++
-    cursor = addDays(cursor, -1)
-  }
-  return count
-}
 
 interface Achievement {
   icon: string
@@ -38,6 +24,8 @@ export default function Profile() {
   const [plans] = useStored<Record<string, PlanTask[]>>('pm.plan', {})
   const [expenses] = useStored<Expense[]>('pm.expenses', [])
   const [journal] = useStored<Record<string, unknown>>('pm.journal', {})
+  const [frozen] = useStored<Record<string, string[]>>('pm.frozen', {})
+  const [freezes] = useStored<number>('pm.freezes', 0)
 
   const total = xpTotal()
   const { level, into, need } = levelInfo(total)
@@ -77,7 +65,10 @@ export default function Profile() {
     .reduce((s, e) => s + e.amount, 0)
 
   // --- utmärkelser ---
-  const bestStreak = Math.max(0, ...habits.map((h) => streak(habitDone[h.id] ?? [])))
+  const bestStreak = Math.max(
+    0,
+    ...habits.map((h) => streakWith(habitDone[h.id] ?? [], frozen[h.id] ?? [])),
+  )
   const pomoDayMax = (() => {
     let max = 0
     for (let i = 0; i < localStorage.length; i++) {
@@ -173,6 +164,38 @@ export default function Profile() {
     value: health[dateKey(d)]?.mood ?? 0,
   }))
 
+  // --- året i siffror ---
+  const year = String(new Date().getFullYear())
+  const yearEntries = Object.entries(days).filter(([d]) => d.startsWith(year))
+  const yearXp = yearEntries.reduce((s, [, v]) => s + v, 0)
+  const activeDays = yearEntries.filter(([, v]) => v > 0).length
+  const yearTasks = Object.entries(plans)
+    .filter(([d]) => d.startsWith(year))
+    .reduce((s, [, list]) => s + list.filter((t) => t.done).length, 0)
+  const monthNames = [
+    'januari', 'februari', 'mars', 'april', 'maj', 'juni',
+    'juli', 'augusti', 'september', 'oktober', 'november', 'december',
+  ]
+  const byMonth = new Map<string, number>()
+  for (const [d, v] of yearEntries) {
+    byMonth.set(d.slice(5, 7), (byMonth.get(d.slice(5, 7)) ?? 0) + v)
+  }
+  const bestMonth = [...byMonth.entries()].sort((a, b) => b[1] - a[1])[0]
+
+  const shareYear = () =>
+    shareStatsImage({
+      title: `MITT ${year}`,
+      subtitle: name,
+      rows: [
+        ['⚡', `${yearXp} XP i år`],
+        ['📅', `${activeDays} aktiva dagar`],
+        ['✅', `${yearTasks} uppgifter klara`],
+        ['🔥', `${bestStreak} dagars bästa streak`],
+        ['🏆', bestMonth ? `Bästa månaden: ${monthNames[Number(bestMonth[0]) - 1]}` : 'Året har bara börjat'],
+      ],
+      filename: `planeramera-${year}.png`,
+    })
+
   const weekSpendSeries = Array.from({ length: 8 }, (_, i) => {
     const monday = addDays(weekDates()[0], (i - 7) * 7)
     const daysOfWeek = weekDates(monday).map((d) => dateKey(d))
@@ -216,6 +239,10 @@ export default function Profile() {
         </div>
         <div className="progress">
           <div style={{ width: `${(into / need) * 100}%` }} />
+        </div>
+        <div className="result-line" style={{ marginTop: 8 }}>
+          <span>🧊 Streak-frysningar</span>
+          <span className="value">{freezes} / 3</span>
         </div>
         <div className="hint" style={{ marginTop: 8 }}>
           Du får XP för klara uppgifter, vanor, rutiner, fokuspass och
@@ -294,6 +321,37 @@ export default function Profile() {
         <div className="progress-label" style={{ marginTop: 6 }}>
           Varje ruta är en dag — ju mer guld, desto mer gjort. Små steg, stor
           förändring.
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="goal-head">
+          <div className="card-title">🎁 Mitt {year}</div>
+        </div>
+        <div className="result-line">
+          <span>⚡ XP i år</span>
+          <span className="value">{yearXp}</span>
+        </div>
+        <div className="result-line">
+          <span>📅 Aktiva dagar</span>
+          <span className="value">{activeDays}</span>
+        </div>
+        <div className="result-line">
+          <span>✅ Uppgifter klara</span>
+          <span className="value">{yearTasks}</span>
+        </div>
+        {bestMonth && (
+          <div className="result-line">
+            <span>🏆 Bästa månaden</span>
+            <span className="value" style={{ textTransform: 'capitalize' }}>
+              {monthNames[Number(bestMonth[0]) - 1]}
+            </span>
+          </div>
+        )}
+        <div className="add-row">
+          <button className="btn-ghost" style={{ flex: 1 }} onClick={shareYear}>
+            📸 Dela mitt {year} som bild
+          </button>
         </div>
       </div>
 
