@@ -9,7 +9,7 @@ import { defaultHabits } from './data'
 import type { Habit } from './types'
 import Onboarding from './Onboarding'
 import SmartInput from './components/SmartInput'
-import Today from './tabs/Today'
+import Feed from './tabs/Feed'
 import Routines from './tabs/Routines'
 import Habits from './tabs/Habits'
 import Focus from './tabs/Focus'
@@ -23,7 +23,7 @@ import Profile from './tabs/Profile'
 import Guide from './tabs/Guide'
 
 const tabs = [
-  { id: 'today', label: 'Idag', icon: '☀️' },
+  { id: 'today', label: 'Flödet', icon: '📡' },
   { id: 'routines', label: 'Rutiner', icon: '🏠' },
   { id: 'habits', label: 'Vanor', icon: '📊' },
   { id: 'focus', label: 'Fokus', icon: '🍅' },
@@ -39,7 +39,7 @@ const tabs = [
 
 type TabId = (typeof tabs)[number]['id']
 
-const primaryIds: TabId[] = ['today', 'habits', 'focus', 'economy']
+const primaryIds: TabId[] = ['today']
 const primaryTabs = tabs.filter((t) => primaryIds.includes(t.id))
 const moreTabs = tabs.filter((t) => !primaryIds.includes(t.id))
 
@@ -306,7 +306,7 @@ export default function App() {
 
       {/* fokus-fliken remountas inte av datastötar — det skulle nolla en löpande timer */}
       <div key={tab === 'focus' ? 'focus' : dataVersion}>
-        {tab === 'today' && <Today goTo={setTab} />}
+        {tab === 'today' && <Feed goTo={setTab} />}
         {tab === 'routines' && <Routines />}
         {tab === 'habits' && <Habits />}
         {tab === 'focus' && <Focus />}
