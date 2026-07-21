@@ -7,6 +7,7 @@ import type { TabId } from '../App'
 import { awardXp, XP, xpDays } from '../xp'
 import { confetti } from '../confetti'
 import { streakWith } from '../streaks'
+import { getPatterns } from '../patterns'
 import Rings from '../components/Rings'
 
 interface JournalEntry {
@@ -429,6 +430,29 @@ export default function Feed({ goTo }: { goTo: (t: TabId) => void }) {
       </div>
     ),
   })
+
+  const patterns = getPatterns()
+  if (patterns.length > 0) {
+    cards.push({
+      priority: 60,
+      key: 'patterns',
+      node: (
+        <div className="card" key="patterns">
+          <div className="card-title">🧬 Dina mönster</div>
+          <div className="card-sub">
+            Upptäckta i din egen data med riktig statistik — helt lokalt, ingen
+            server ser något.
+          </div>
+          {patterns.slice(0, 3).map((p, i) => (
+            <div className="insight" key={i}>
+              <span className="insight-icon">{p.icon}</span>
+              <span>{p.text}</span>
+            </div>
+          ))}
+        </div>
+      ),
+    })
+  }
 
   cards.push({
     priority: 55,

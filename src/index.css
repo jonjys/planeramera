@@ -927,6 +927,40 @@ input::placeholder {
   padding: 13px 14px;
 }
 
+.palette-row {
+  display: flex;
+  gap: 8px;
+}
+
+.palette-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.mic {
+  width: 50px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  font-size: 19px;
+}
+
+.mic.on {
+  border-color: var(--red);
+  background: rgba(224, 108, 108, 0.12);
+  animation: micpulse 1.2s ease-out infinite;
+}
+
+@keyframes micpulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(224, 108, 108, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(224, 108, 108, 0);
+  }
+}
+
 .palette-opt {
   display: flex;
   align-items: center;
