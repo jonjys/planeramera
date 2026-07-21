@@ -6,6 +6,7 @@ import { xpTotal, levelInfo } from './xp'
 import { confetti } from './confetti'
 import { dateKey, addDays } from './store'
 import { defaultHabits } from './data'
+import { markConnected } from './connections'
 import type { Habit } from './types'
 import Onboarding from './Onboarding'
 import SmartInput from './components/SmartInput'
@@ -18,6 +19,7 @@ import Economy from './tabs/Economy'
 import Meals from './tabs/Meals'
 import Shopping from './tabs/Shopping'
 import Discover from './tabs/Discover'
+import Connections from './tabs/Connections'
 import AiCoach from './tabs/AiCoach'
 import Profile from './tabs/Profile'
 import Guide from './tabs/Guide'
@@ -32,6 +34,7 @@ const tabs = [
   { id: 'meals', label: 'Mat', icon: '🍳' },
   { id: 'shopping', label: 'Inköp', icon: '🛒' },
   { id: 'discover', label: 'Utforska', icon: '🌍' },
+  { id: 'connections', label: 'Koppla', icon: '🔌' },
   { id: 'ai', label: 'AI-Coach', icon: '🤖' },
   { id: 'profile', label: 'Profil', icon: '👤' },
   { id: 'guide', label: 'Guide', icon: '📖' },
@@ -112,7 +115,9 @@ export default function App() {
   }, [])
 
   // autoimport av hälsodata från iOS-genväg: /#health=steps:8543,sleep:7.5
+  // — både vid appstart och när en redan öppen app får URL:en (hashchange)
   useEffect(() => {
+    const runImport = () => {
     const data = readHealthFromUrl()
     if (!data) return
     try {
@@ -134,12 +139,17 @@ export default function App() {
       const summary = Object.entries(data)
         .map(([k, v]) => labels[k](v))
         .join(' · ')
+      markConnected('health')
       setToast(`❤️ Hälsodata importerad: ${summary}`)
       setTimeout(() => setToast(''), 4500)
     } catch {
       // trasig lagring — hoppa över importen
     }
     history.replaceState(null, '', location.pathname + location.search)
+    }
+    runImport()
+    window.addEventListener('hashchange', runImport)
+    return () => window.removeEventListener('hashchange', runImport)
   }, [])
 
   const acceptShared = () => {
@@ -315,6 +325,7 @@ export default function App() {
         {tab === 'meals' && <Meals />}
         {tab === 'shopping' && <Shopping />}
         {tab === 'discover' && <Discover />}
+        {tab === 'connections' && <Connections goTo={setTab} />}
         {tab === 'ai' && <AiCoach />}
         {tab === 'profile' && <Profile />}
         {tab === 'guide' && <Guide />}
