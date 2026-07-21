@@ -14,6 +14,19 @@ export default function AiCoach() {
   const [draft, setDraft] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [speak, setSpeak] = useStored('pm.ai.speak', false)
+
+  const sayIt = (text: string) => {
+    if (!speak || !('speechSynthesis' in window)) return
+    try {
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.lang = 'sv-SE'
+      speechSynthesis.cancel()
+      speechSynthesis.speak(utterance)
+    } catch {
+      // talsyntes blockerad — inte kritiskt
+    }
+  }
 
   const send = async () => {
     const text = draft.trim()
@@ -50,6 +63,7 @@ export default function AiCoach() {
       const reply =
         data.reply + (confirmations.length ? '\n\n' + confirmations.join('\n') : '')
       setHistory([...nextHistory, { role: 'assistant', content: reply }])
+      sayIt(data.reply)
     } catch {
       setError(
         'Kunde inte nå AI-Coachen. Fungerar bara när appen är deployad på Vercel med ANTHROPIC_API_KEY satt.',
@@ -70,6 +84,18 @@ export default function AiCoach() {
         <div className="hint">
           Kräver att <code>ANTHROPIC_API_KEY</code> är satt i Vercel-projektets
           miljövariabler (Settings → Environment Variables).
+        </div>
+        <div className="add-row">
+          <button
+            className="btn-ghost"
+            style={{ flex: 1 }}
+            onClick={() => {
+              if (speak) speechSynthesis?.cancel()
+              setSpeak(!speak)
+            }}
+          >
+            {speak ? '🔊 Uppläsning: På' : '🔇 Uppläsning: Av'}
+          </button>
         </div>
       </div>
 

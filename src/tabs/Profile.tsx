@@ -5,6 +5,7 @@ import Backup from '../components/Backup'
 import { Bars, LineChart } from '../components/Charts'
 import { shareWeekImage, shareStatsImage } from '../storyImage'
 import { streakWith } from '../streaks'
+import { getPatterns } from '../patterns'
 import type { Follow } from '../pack'
 import type { Expense, Habit, PlanTask } from '../types'
 
@@ -354,6 +355,26 @@ export default function Profile() {
           </button>
         </div>
       </div>
+
+      {(() => {
+        const patterns = getPatterns()
+        if (!patterns.length) return null
+        return (
+          <div className="card">
+            <div className="card-title">🧬 Dina mönster · alla</div>
+            <div className="card-sub">
+              Statistiska samband i din egen data. Fler dyker upp allt eftersom
+              du använder appen.
+            </div>
+            {patterns.map((p, i) => (
+              <div className="insight" key={i}>
+                <span className="insight-icon">{p.icon}</span>
+                <span>{p.text}</span>
+              </div>
+            ))}
+          </div>
+        )
+      })()}
 
       <div className="card">
         <div className="card-title">XP · senaste 14 dagarna</div>
