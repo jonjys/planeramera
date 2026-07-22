@@ -1,5 +1,8 @@
 import { useMemo, useRef, useState } from 'react'
 import { parseSmart } from '../smartInput'
+import { buildAiContext } from '../aiContext'
+import { applyAiAction } from '../aiActions'
+import type { AiAction } from '../aiActions'
 
 interface SpeechRecognitionLike {
   lang: string
@@ -23,8 +26,10 @@ export default function SmartInput({ onDone }: { onDone: (msg: string) => void }
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [listening, setListening] = useState(false)
+  const [scanning, setScanning] = useState(false)
   const recRef = useRef<SpeechRecognitionLike | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const fileRef = useRef<HTMLInputElement | null>(null)
 
   const actions = useMemo(() => parseSmart(text), [text])
 
@@ -70,6 +75,44 @@ export default function SmartInput({ onDone }: { onDone: (msg: string) => void }
     rec.start()
   }
 
+  const scanImage = async (file: File) => {
+    setScanning(true)
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = () => reject(new Error('read_failed'))
+        reader.readAsDataURL(file)
+      })
+      const res = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: dataUrl, context: buildAiContext() }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        onDone('📷 ' + (data.message || 'Kunde inte läsa bilden.'))
+        setScanning(false)
+        return
+      }
+      const confirmations: string[] = []
+      for (const action of (data.actions ?? []) as AiAction[]) {
+        try {
+          confirmations.push(applyAiAction(action))
+        } catch {
+          // ogiltig åtgärd från modellen — hoppa över
+        }
+      }
+      onDone('📷 ' + (confirmations.length ? confirmations.join(' · ') : data.reply))
+      setOpen(false)
+    } catch {
+      onDone(
+        '📷 Kunde inte läsa bilden — kräver att appen är deployad på Vercel med ANTHROPIC_API_KEY.',
+      )
+    }
+    setScanning(false)
+  }
+
   return (
     <>
       <button className="fab" onClick={() => setOpen(true)} aria-label="Smart inmatning">
@@ -94,28 +137,55 @@ export default function SmartInput({ onDone }: { onDone: (msg: string) => void }
                   if (e.key === 'Enter') pick(0)
                   if (e.key === 'Escape') setOpen(false)
                 }}
+                disabled={scanning}
               />
               <button
                 className={`mic ${listening ? 'on' : ''}`}
                 onClick={toggleVoice}
                 aria-label="Röststyrning"
+                disabled={scanning}
               >
                 🎤
               </button>
-            </div>
-            {actions.map((a, i) => (
-              <button className="palette-opt" key={i} onClick={() => pick(i)}>
-                <span className="palette-ico">{a.icon}</span>
-                <span>{a.label}</span>
-                {i === 0 && <span className="palette-enter">⏎</span>}
+              <button
+                className="mic"
+                onClick={() => fileRef.current?.click()}
+                aria-label="Skanna kvitto eller bild"
+                disabled={scanning}
+              >
+                📷
               </button>
-            ))}
-            {!text && (
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0]
+                  if (f) void scanImage(f)
+                  e.target.value = ''
+                }}
+              />
+            </div>
+            {scanning && (
+              <div className="scan-loading">🔍 Läser bilden med AI …</div>
+            )}
+            {!scanning &&
+              actions.map((a, i) => (
+                <button className="palette-opt" key={i} onClick={() => pick(i)}>
+                  <span className="palette-ico">{a.icon}</span>
+                  <span>{a.label}</span>
+                  {i === 0 && <span className="palette-enter">⏎</span>}
+                </button>
+              ))}
+            {!text && !scanning && (
               <div className="hint" style={{ marginTop: 12 }}>
-                Appen förstår: utgifter ("lunch 120"), inköp ("köp mjölk, ägg"),
-                hälsa ("vatten 3", "7,5 h sömn", "8500 steg"), uppgifter ("stor
-                skriv rapporten"), vanor ("vana meditation") och rutiner. Tryck på
-                🎤 och säg det istället — allt tolkas lokalt på din enhet. ✨
+                Skriv, säg 🎤 eller fota 📷 ett kvitto — appen loggar det själv,
+                ingen kategori att välja. Fungerar även på "lunch 120", "köp
+                mjölk, ägg", "vatten 3", "7,5 h sömn". Text och tal tolkas
+                lokalt; foton skickas till Claude för analys, allt annat stannar
+                på din enhet. ✨
               </div>
             )}
           </div>

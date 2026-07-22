@@ -32,6 +32,14 @@ All data sparas lokalt i webbläsaren (localStorage) — ingen backend, inget
 konto. Undantaget är **AI-Coachen** (se nedan), som kräver en liten
 serverfunktion för att prata med Claude.
 
+## 📷 Kvittoskanner — noll skrivande
+
+Tryck ✨ → 📷, fota ett kvitto (eller vilken skärmdump som helst), och Claudes
+bildseende (`api/scan.ts`) läser av summa, butik och kategori automatiskt och
+loggar utgiften — ingen kategori att välja, inget belopp att skriva. Funkar
+även på skärmdumpar av att-göra-listor eller andra appars vy. Delar backend
+och action-schema med AI-Coachen (`api/_lib/agentSchema.ts`).
+
 ## AI-Coach 🤖
 
 En riktig konversations-agent byggd på Claude API (Vercel-serverfunktion i
