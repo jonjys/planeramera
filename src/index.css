@@ -952,6 +952,29 @@ input::placeholder {
   animation: micpulse 1.2s ease-out infinite;
 }
 
+.mic:disabled {
+  opacity: 0.4;
+}
+
+.scan-loading {
+  text-align: center;
+  padding: 20px 10px;
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 14px;
+  animation: pulse-text 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-text {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 @keyframes micpulse {
   0% {
     box-shadow: 0 0 0 0 rgba(224, 108, 108, 0.45);
